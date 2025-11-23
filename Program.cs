@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Identity;
+锘縰sing Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using EcommerceSystem.Data;
 using EcommerceSystem.Data.Seeders;
@@ -12,7 +12,7 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // =============================
-// CONFIGURACI覰 DE SERVICIOS
+// CONFIGURACI脫N DE SERVICIOS
 // =============================
 
 // DbContext con SQL Server
@@ -27,7 +27,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 // Identity con roles
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
-    // Configuraci髇 de contrase馻s
+    // Configuraci贸n de contrase帽as
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 8;
     options.Password.RequireNonAlphanumeric = false;
@@ -44,38 +44,45 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     options.SignIn.RequireConfirmedAccount = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders()
-.AddDefaultUI();
+.AddDefaultTokenProviders();
+
+// Configurar cookies de autenticaci贸n
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.ExpireTimeSpan = TimeSpan.FromHours(24);
+    options.SlidingExpiration = true;
+});
 
 // JWT Authentication para API
-var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured");
-var key = Encoding.ASCII.GetBytes(jwtKey);
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (!string.IsNullOrEmpty(jwtKey))
+{
+    var key = Encoding.ASCII.GetBytes(jwtKey);
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.RequireHttpsMetadata = false;
-    options.SaveToken = true;
-    options.TokenValidationParameters = new TokenValidationParameters
+    builder.Services.AddAuthentication()
+    .AddJwtBearer(options =>
     {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidateAudience = true,
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero
-    };
-});
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+}
 
 // Controllers y Views
 builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages();
 
 // Swagger para documentar API
 builder.Services.AddEndpointsApiExplorer();
@@ -88,7 +95,7 @@ builder.Services.AddSwaggerGen(c =>
         Description = "API REST para sistema de ecommerce multiplataforma"
     });
 
-    // Configuraci髇 JWT en Swagger
+    // Configuraci贸n JWT en Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header usando el esquema Bearer. Ejemplo: \"Bearer {token}\"",
@@ -152,6 +159,9 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        context.Database.Migrate();
+
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
         await RoleSeeder.SeedRolesAndAdminAsync(roleManager, userManager);
@@ -159,33 +169,32 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Error al crear roles y usuario admin");
+        logger.LogError(ex, "Error al inicializar la base de datos");
     }
 }
 
 // =============================
 // MIDDLEWARE PIPELINE
 // =============================
-
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseMigrationsEndPoint();
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ecommerce API V1");
-        c.RoutePrefix = "api/docs"; // Acceder en /api/docs
+        c.RoutePrefix = "api/docs";
     });
 }
 else
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
+    app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
 
 app.UseCors("AllowMobileApp");
@@ -196,21 +205,21 @@ app.UseAuthorization();
 app.UseSession();
 
 // =============================
-// CONFIGURACI覰 DE RUTAS
+// CONFIGURACI脫N DE RUTAS
 // =============================
 
-// Ruta para 醨ea Admin (DEBE IR PRIMERO)
-app.MapControllerRoute(
-    name: "admin",
-    pattern: "Admin/{controller=Dashboard}/{action=Index}/{id?}",
-    defaults: new { area = "Admin" });
+// Redirecci贸n autom谩tica al login en la ra铆z
+app.MapGet("/", context =>
+{
+    context.Response.Redirect("/Account/Login");
+    return Task.CompletedTask;
+});
 
-// Ruta por defecto para controllers p鷅licos
+
+
+// Ruta por defecto
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
-// Razor Pages (para Identity UI)
-app.MapRazorPages();
 
 app.Run();

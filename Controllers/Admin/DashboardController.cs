@@ -5,7 +5,6 @@ using EcommerceSystem.Services.Interfaces;
 namespace EcommerceSystem.Controllers.Admin
 {
     [Authorize(Roles = "Admin,Vendedor")]
-    [Area("Admin")]
     public class DashboardController : Controller
     {
         private readonly IReporteService _reporteService;
@@ -19,19 +18,18 @@ namespace EcommerceSystem.Controllers.Admin
             _alertaService = alertaService;
         }
 
-        // GET: Admin/Dashboard
         public async Task<IActionResult> Index()
         {
             var dashboard = await _reporteService.ObtenerDashboardAsync();
             dashboard.AlertasRecientes = await ObtenerAlertasAsync();
 
-            return View(dashboard);
+            // Especifica la ruta completa de la vista
+            return View("~/Views/Admin/Dashboard/Index.cshtml", dashboard);
         }
 
         private async Task<List<Models.ViewModels.AlertaStockDto>> ObtenerAlertasAsync()
         {
             var alertas = await _alertaService.ObtenerAlertasPendientesAsync();
-
             return alertas.Select(a => new Models.ViewModels.AlertaStockDto
             {
                 ProductoNombre = a.Producto.Nombre,

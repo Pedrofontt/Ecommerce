@@ -1,410 +1,182 @@
 ﻿@model EcommerceSystem.Models.ViewModels.DashboardViewModel
-
 @{
     ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
-    <span class="text-muted">Última actualización: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</span>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Dashboard</h1>
 </div>
 
-<!-- KPIs Cards -->
+<!-- Tarjetas de resumen -->
 <div class="row mb-4">
-    <div class="col-xl-3 col-md-6 mb-3">
-        <div class="card border-left-primary shadow h-100 py-2">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary mb-3">
             <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                            Ventas Hoy
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                            @Model.VentasHoy.ToString("C")
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="bi bi-currency-dollar text-primary" style="font-size: 2rem;"></i>
-                    </div>
-                </div>
+                <h5 class="card-title"><i class="bi bi-cash-stack"></i> Ventas Hoy</h5>
+                <p class="card-text display-6">@Model.VentasHoy.ToString("C")</p>
             </div>
         </div>
     </div>
-
-    <div class="col-xl-3 col-md-6 mb-3">
-        <div class="card border-left-success shadow h-100 py-2">
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-success mb-3">
             <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            Ventas Esta Semana
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                            @Model.VentasSemana.ToString("C")
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="bi bi-graph-up text-success" style="font-size: 2rem;"></i>
-                    </div>
-                </div>
+                <h5 class="card-title"><i class="bi bi-calendar-week"></i> Ventas Semana</h5>
+                <p class="card-text display-6">@Model.VentasSemana.ToString("C")</p>
             </div>
         </div>
     </div>
-
-    <div class="col-xl-3 col-md-6 mb-3">
-        <div class="card border-left-info shadow h-100 py-2">
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-info mb-3">
             <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                            Ventas Este Mes
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                            @Model.VentasMes.ToString("C")
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="bi bi-calendar-check text-info" style="font-size: 2rem;"></i>
-                    </div>
-                </div>
+                <h5 class="card-title"><i class="bi bi-calendar-month"></i> Ventas Mes</h5>
+                <p class="card-text display-6">@Model.VentasMes.ToString("C")</p>
             </div>
         </div>
     </div>
-
-    <div class="col-xl-3 col-md-6 mb-3">
-        <div class="card border-left-warning shadow h-100 py-2">
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-warning mb-3">
             <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                            Órdenes Pendientes
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                            @Model.OrdenesPendientes
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="bi bi-clock-history text-warning" style="font-size: 2rem;"></i>
-                    </div>
-                </div>
+                <h5 class="card-title"><i class="bi bi-cart-check"></i> Órdenes Hoy</h5>
+                <p class="card-text display-6">@Model.OrdenesHoy</p>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Segunda fila de KPIs -->
+<!-- Segunda fila de tarjetas -->
 <div class="row mb-4">
-    <div class="col-xl-4 col-md-6 mb-3">
-        <div class="card border-left-danger shadow h-100 py-2">
+    <div class="col-md-6">
+        <div class="card border-warning mb-3">
             <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
-                            Productos Stock Bajo
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                            @Model.ProductosStockBajo
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="bi bi-exclamation-triangle text-danger" style="font-size: 2rem;"></i>
-                    </div>
-                </div>
+                <h5 class="card-title"><i class="bi bi-hourglass-split"></i> Órdenes Pendientes</h5>
+                <p class="card-text display-4 text-warning">@Model.OrdenesPendientes</p>
             </div>
         </div>
     </div>
-
-    <div class="col-xl-4 col-md-6 mb-3">
-        <div class="card border-left-primary shadow h-100 py-2">
+    
+    <div class="col-md-6">
+        <div class="card border-danger mb-3">
             <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                            Órdenes Hoy
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                            @Model.OrdenesHoy
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="bi bi-cart-check text-primary" style="font-size: 2rem;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-xl-4 col-md-6 mb-3">
-        <div class="card border-left-success shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            Promedio por Orden
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                            @if (Model.OrdenesHoy > 0)
-                            {
-                                @((Model.VentasHoy / Model.OrdenesHoy).ToString("C"))
-                            }
-                            else
-                            {
-                                @(0.ToString("C"))
-                            }
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="bi bi-receipt text-success" style="font-size: 2rem;"></i>
-                    </div>
-                </div>
+                <h5 class="card-title"><i class="bi bi-exclamation-triangle"></i> Productos Stock Bajo</h5>
+                <p class="card-text display-4 text-danger">@Model.ProductosStockBajo</p>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Gráficos y Tablas -->
-<div class="row">
-    <!-- Productos Más Vendidos -->
-    <div class="col-xl-6 mb-4">
-        <div class="card shadow">
-            <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                <h6 class="m-0 font-weight-bold text-primary">
-                    <i class="bi bi-bar-chart"></i> Productos Más Vendidos
-                </h6>
-                <a asp-area="Admin" asp-controller="Reportes" asp-action="ProductosMasVendidos" class="btn btn-sm btn-outline-primary">
-                    Ver Todos
-                </a>
-            </div>
-            <div class="card-body">
-                @if (Model.ProductosMasVendidos != null && Model.ProductosMasVendidos.Any())
-                {
+<!-- Alertas de Stock -->
+@if (Model.AlertasRecientes != null && Model.AlertasRecientes.Any())
+{
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5><i class="bi bi-bell-fill"></i> Alertas de Stock Bajo</h5>
+                </div>
+                <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-sm table-hover">
+                        <table class="table table-hover">
                             <thead>
                                 <tr>
                                     <th>Producto</th>
-                                    <th class="text-center">Vendidos</th>
-                                    <th class="text-end">Total</th>
+                                    <th>Stock Actual</th>
+                                    <th>Stock Mínimo</th>
+                                    <th>Mensaje</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var item in Model.ProductosMasVendidos)
+                                @foreach (var alerta in Model.AlertasRecientes)
                                 {
                                     <tr>
-                                        <td>@item.Nombre</td>
-                                        <td class="text-center">
-                                            <span class="badge bg-primary">@item.CantidadVendida</span>
-                                        </td>
-                                        <td class="text-end">@item.TotalVentas.ToString("C")</td>
+                                        <td><strong>@alerta.ProductoNombre</strong></td>
+                                        <td><span class="badge bg-danger">@alerta.StockActual</span></td>
+                                        <td>@alerta.StockMinimo</td>
+                                        <td>@alerta.Mensaje</td>
                                     </tr>
                                 }
                             </tbody>
                         </table>
                     </div>
-                }
-                else
-                {
-                    <p class="text-muted text-center py-4">No hay datos de ventas</p>
-                }
+                </div>
             </div>
         </div>
     </div>
+}
 
-    <!-- Alertas de Stock -->
-    <div class="col-xl-6 mb-4">
-        <div class="card shadow">
-            <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                <h6 class="m-0 font-weight-bold text-danger">
-                    <i class="bi bi-bell"></i> Alertas de Stock
-                </h6>
-                <a asp-area="Admin" asp-controller="Alertas" asp-action="Index" class="btn btn-sm btn-outline-danger">
-                    Ver Todas
-                </a>
-            </div>
-            <div class="card-body">
-                @if (Model.AlertasRecientes != null && Model.AlertasRecientes.Any())
-                {
-                    <div class="list-group">
-                        @foreach (var alerta in Model.AlertasRecientes)
-                        {
-                            <div class="list-group-item list-group-item-action">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h6 class="mb-1">@alerta.ProductoNombre</h6>
-                                    @if (alerta.StockActual == 0)
-                                    {
-                                        <span class="badge bg-danger">AGOTADO</span>
-                                    }
-                                    else if (alerta.StockActual <= alerta.StockMinimo * 0.5)
-                                    {
-                                        <span class="badge bg-danger">CRÍTICO</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-warning text-dark">BAJO</span>
-                                    }
-                                </div>
-                                <p class="mb-1 small">@alerta.Mensaje</p>
-                                <small class="text-muted">
-                                    Stock: @alerta.StockActual / Mínimo: @alerta.StockMinimo
-                                </small>
-                            </div>
-                        }
-                    </div>
-                }
-                else
-                {
-                    <div class="alert alert-success mb-0">
-                        <i class="bi bi-check-circle"></i> No hay alertas pendientes
-                    </div>
-                }
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Gráfico de Ventas -->
-<div class="row">
-    <div class="col-12">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">
-                    <i class="bi bi-graph-up-arrow"></i> Ventas de los Últimos 7 Días
-                </h6>
-            </div>
-            <div class="card-body">
-                @if (Model.VentasPorDia != null && Model.VentasPorDia.Any())
-                {
-                    <canvas id="ventasChart" style="max-height: 300px;"></canvas>
-                }
-                else
-                {
-                    <p class="text-muted text-center py-5">No hay datos de ventas en los últimos 7 días</p>
-                }
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Accesos Rápidos -->
-<div class="row">
-    <div class="col-12">
-        <div class="card shadow">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">
-                    <i class="bi bi-lightning"></i> Accesos Rápidos
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-md-3 mb-3">
-                        <a asp-area="Admin" asp-controller="Productos" asp-action="Create" class="btn btn-outline-primary btn-lg w-100">
-                            <i class="bi bi-plus-circle d-block" style="font-size: 2rem;"></i>
-                            Nuevo Producto
-                        </a>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <a asp-area="Admin" asp-controller="Ordenes" asp-action="Index" class="btn btn-outline-success btn-lg w-100">
-                            <i class="bi bi-cart-check d-block" style="font-size: 2rem;"></i>
-                            Ver Órdenes
-                        </a>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <a asp-area="Admin" asp-controller="Reportes" asp-action="Inventario" class="btn btn-outline-info btn-lg w-100">
-                            <i class="bi bi-boxes d-block" style="font-size: 2rem;"></i>
-                            Inventario
-                        </a>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <a asp-area="Admin" asp-controller="Reportes" asp-action="Ventas" class="btn btn-outline-warning btn-lg w-100">
-                            <i class="bi bi-file-earmark-bar-graph d-block" style="font-size: 2rem;"></i>
-                            Reportes
-                        </a>
+<!-- Productos más vendidos -->
+@if (Model.ProductosMasVendidos != null && Model.ProductosMasVendidos.Any())
+{
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5><i class="bi bi-trophy-fill"></i> Productos Más Vendidos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad Vendida</th>
+                                    <th>Total Ventas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var producto in Model.ProductosMasVendidos)
+                                {
+                                    <tr>
+                                        <td>@producto.Nombre</td>
+                                        <td><span class="badge bg-success">@producto.CantidadVendida</span></td>
+                                        <td><strong>@producto.TotalVentas.ToString("C")</strong></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        @if (Model.VentasPorDia != null && Model.VentasPorDia.Any())
-        {
-            <text>
-            const ctx = document.getElementById('ventasChart').getContext('2d');
-            const ventasChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [@Html.Raw(string.Join(",", Model.VentasPorDia.Select(v => $"'{v.Fecha:dd/MM}'")))],
-                    datasets: [{
-                        label: 'Ventas ($)',
-                        data: [@Html.Raw(string.Join(",", Model.VentasPorDia.Select(v => v.Total)))],
-                        borderColor: 'rgb(75, 192, 192)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        tension: 0.1,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return 'Ventas: $' + context.parsed.y.toFixed(2);
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '$' + value;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            </text>
-        }
-    </script>
 }
 
-<style>
-    .border-left-primary { 
-        border-left: 4px solid #4e73df !important; 
-    }
-    .border-left-success { 
-        border-left: 4px solid #1cc88a !important; 
-    }
-    .border-left-info { 
-        border-left: 4px solid #36b9cc !important; 
-    }
-    .border-left-warning { 
-        border-left: 4px solid #f6c23e !important; 
-    }
-    .border-left-danger { 
-        border-left: 4px solid #e74a3b !important; 
-    }
-    
-    .text-xs {
-        font-size: .7rem;
-    }
-    
-    .font-weight-bold {
-        font-weight: 700 !important;
-    }
-    
-    .text-gray-800 {
-        color: #5a5c69 !important;
-    }
-</style>
+<!-- Ventas por día -->
+@if (Model.VentasPorDia != null && Model.VentasPorDia.Any())
+{
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5><i class="bi bi-graph-up"></i> Ventas de los Últimos Días</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Total Ventas</th>
+                                    <th>Número de Órdenes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var venta in Model.VentasPorDia)
+                                {
+                                    <tr>
+                                        <td>@venta.Fecha.ToString("dd/MM/yyyy")</td>
+                                        <td><strong>@venta.Total.ToString("C")</strong></td>
+                                        <td><span class="badge bg-info">@venta.NumeroOrdenes</span></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

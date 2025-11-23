@@ -1,8 +1,10 @@
+using EcommerceSystem.Data;
+using EcommerceSystem.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using EcommerceSystem.Data;
 using System.Diagnostics;
-using EcommerceSystem.Models;
 
 namespace EcommerceSystem.Controllers
 {
@@ -42,5 +44,6 @@ namespace EcommerceSystem.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
     }
 }
