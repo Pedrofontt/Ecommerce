@@ -1,0 +1,75 @@
+﻿@model EcommerceSystem.Models.Entities.Categoria
+
+@{
+    ViewData["Title"] = "Editar Categoría";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning">
+                <h4 class="mb-0"><i class="bi bi-pencil"></i> Editar Categoría</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Nombre" class="form-label"></label>
+                        <input asp-for="Nombre" class="form-control" />
+                        <span asp-validation-for="Nombre" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Descripcion" class="form-label"></label>
+                        <textarea asp-for="Descripcion" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ParentId" class="form-label">Categoría Padre (Opcional)</label>
+                            <select asp-for="ParentId" class="form-select">
+                                <option value="">-- Categoría Principal --</option>
+                                @foreach (var cat in ViewBag.Categorias as List<EcommerceSystem.Models.Entities.Categoria>)
+                                {
+                                    <option value="@cat.Id">@cat.Nombre</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Orden" class="form-label"></label>
+                            <input asp-for="Orden" class="form-control" type="number" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Icono" class="form-label">Ícono (Opcional)</label>
+                        <input asp-for="Icono" class="form-control" placeholder="bi-tag, bi-box, etc." />
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input asp-for="Activo" class="form-check-input" type="checkbox" />
+                            <label asp-for="Activo" class="form-check-label"></label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-save"></i> Actualizar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,108 @@
+﻿@model EcommerceSystem.Models.Entities.Producto
+
+@{
+    ViewData["Title"] = "Eliminar Producto";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Productos</a></li>
+                <li class="breadcrumb-item active">Eliminar</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0"><i class="bi bi-trash"></i> Confirmar Eliminación</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>¿Está seguro que desea eliminar este producto?</strong>
+                    <p class="mb-0 mt-2">Esta acción marcará el producto como inactivo. No se eliminará permanentemente de la base de datos.</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 text-center mb-3">
+                        @if (!string.IsNullOrEmpty(Model.ImagenPrincipal))
+                        {
+                            <img src="@Model.ImagenPrincipal" class="img-fluid rounded shadow-sm" alt="@Model.Nombre" style="max-height: 200px;">
+                        }
+                        else
+                        {
+                            <img src="/img/productos/default.jpg" class="img-fluid rounded shadow-sm" alt="Sin imagen" style="max-height: 200px;">
+                        }
+                    </div>
+                    <div class="col-md-8">
+                        <dl class="row">
+                            <dt class="col-sm-4">SKU:</dt>
+                            <dd class="col-sm-8"><code>@Model.SKU</code></dd>
+
+                            <dt class="col-sm-4">Nombre:</dt>
+                            <dd class="col-sm-8"><strong>@Model.Nombre</strong></dd>
+
+                            <dt class="col-sm-4">Precio:</dt>
+                            <dd class="col-sm-8"><strong class="text-primary">@Model.Precio.ToString("C")</strong></dd>
+
+                            <dt class="col-sm-4">Stock:</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.Stock > 0)
+                                {
+                                    <span class="badge bg-success">@Model.Stock unidades</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Sin stock</span>
+                                }
+                            </dd>
+
+                            <dt class="col-sm-4">Categoría:</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.Categoria != null)
+                                {
+                                    <span class="badge bg-secondary">@Model.Categoria.Nombre</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Sin categoría</span>
+                                }
+                            </dd>
+
+                            <dt class="col-sm-4">Estado:</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.Activo)
+                                {
+                                    <span class="badge bg-success">Activo</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Inactivo</span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <hr />
+
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Confirmar Eliminación
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

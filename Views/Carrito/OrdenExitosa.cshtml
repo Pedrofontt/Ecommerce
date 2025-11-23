@@ -1,0 +1,152 @@
+﻿@model EcommerceSystem.Models.Entities.Orden
+
+@{
+    ViewData["Title"] = "Orden Confirmada";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Mensaje de Éxito -->
+            <div class="text-center mb-4">
+                <div class="mb-4">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+                </div>
+                <h1 class="display-4 fw-bold text-success">¡Pedido Confirmado!</h1>
+                <p class="lead text-muted">Gracias por tu compra</p>
+            </div>
+
+            <!-- Información de la Orden -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-receipt"></i> Detalles de tu Pedido
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Número de Orden:</strong>
+                            <br>
+                            <h4 class="text-primary">#@Model.NumeroOrden</h4>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <strong>Fecha:</strong>
+                            <br>
+                            @Model.FechaOrden.ToString("dd/MM/yyyy HH:mm")
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="mb-3">Información de Contacto</h6>
+                    <p class="mb-1"><strong>Nombre:</strong> @Model.Cliente.NombreCompleto</p>
+                    <p class="mb-1"><strong>Email:</strong> @Model.Cliente.Email</p>
+                    <p class="mb-1"><strong>Teléfono:</strong> @Model.Cliente.Telefono</p>
+                    
+                    <hr>
+
+                    <h6 class="mb-3">Dirección de Envío</h6>
+                    <p>@Model.DireccionEnvio</p>
+
+                    @if (!string.IsNullOrEmpty(Model.NotasCliente))
+                    {
+                        <hr>
+                        <h6 class="mb-3">Notas del Pedido</h6>
+                        <p class="text-muted">@Model.NotasCliente</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Productos -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Productos Ordenados</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th class="text-center">Cantidad</th>
+                                    <th class="text-end">Precio</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var detalle in Model.Detalles)
+                                {
+                                    <tr>
+                                        <td>@detalle.Producto.Nombre</td>
+                                        <td class="text-center">@detalle.Cantidad</td>
+                                        <td class="text-end">@detalle.PrecioUnitario.ToString("C")</td>
+                                        <td class="text-end">@detalle.Subtotal.ToString("C")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
+                                    <td class="text-end">@Model.Subtotal.ToString("C")</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Impuesto:</strong></td>
+                                    <td class="text-end">@Model.Impuesto.ToString("C")</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Envío:</strong></td>
+                                    <td class="text-end">@Model.CostoEnvio.ToString("C")</td>
+                                </tr>
+                                <tr class="table-success">
+                                    <td colspan="3" class="text-end"><h5 class="mb-0">Total:</h5></td>
+                                    <td class="text-end"><h5 class="mb-0">@Model.Total.ToString("C")</h5></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Próximos Pasos -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> ¿Qué Sigue?</h5>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0">
+                        <li class="mb-2">
+                            Recibirás un email de confirmación en <strong>@Model.Cliente.Email</strong>
+                        </li>
+                        <li class="mb-2">
+                            Procesaremos tu pedido en las próximas 24 horas
+                        </li>
+                        <li class="mb-2">
+                            Te notificaremos cuando tu pedido sea enviado
+                        </li>
+                        <li class="mb-0">
+                            Tiempo de entrega estimado: <strong>2-3 días hábiles</strong>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Acciones -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg">
+                    <i class="bi bi-house"></i> Volver al Inicio
+                </a>
+                <a asp-controller="Tienda" asp-action="Index" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-shop"></i> Seguir Comprando
+                </a>
+                <button onclick="window.print()" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-printer"></i> Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style media="print">
+    .btn, nav, footer { display: none !important; }
+</style>

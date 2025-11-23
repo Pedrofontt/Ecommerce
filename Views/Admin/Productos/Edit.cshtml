@@ -1,0 +1,161 @@
+﻿@model EcommerceSystem.Models.ViewModels.ProductoViewModel
+
+@{
+    ViewData["Title"] = "Editar Producto";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Productos</a></li>
+                <li class="breadcrumb-item active">Editar</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning">
+                <h4 class="mb-0"><i class="bi bi-pencil"></i> Editar Producto</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="ImagenActual" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Nombre" class="form-label"></label>
+                            <input asp-for="Nombre" class="form-control" />
+                            <span asp-validation-for="Nombre" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Precio" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input asp-for="Precio" class="form-control" step="0.01" />
+                            </div>
+                            <span asp-validation-for="Precio" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="PrecioComparacion" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input asp-for="PrecioComparacion" class="form-control" step="0.01" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Stock" class="form-label"></label>
+                            <input asp-for="Stock" class="form-control" type="number" min="0" />
+                            <span asp-validation-for="Stock" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="StockMinimo" class="form-label"></label>
+                            <input asp-for="StockMinimo" class="form-control" type="number" min="0" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="DescripcionCorta" class="form-label"></label>
+                        <input asp-for="DescripcionCorta" class="form-control" maxlength="500" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Descripcion" class="form-label"></label>
+                        <textarea asp-for="Descripcion" class="form-control" rows="4"></textarea>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label asp-for="CategoriaId" class="form-label"></label>
+                            <select asp-for="CategoriaId" asp-items="Model.Categorias" class="form-select">
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="MarcaId" class="form-label"></label>
+                            <select asp-for="MarcaId" asp-items="Model.Marcas" class="form-select">
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="ProveedorId" class="form-label"></label>
+                            <select asp-for="ProveedorId" asp-items="Model.Proveedores" class="form-select">
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ImagenFile" class="form-label"></label>
+                        <input asp-for="ImagenFile" class="form-control" type="file" accept="image/*" />
+                        <small class="form-text text-muted">Dejar vacío para mantener la imagen actual</small>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input asp-for="Destacado" class="form-check-input" type="checkbox" />
+                                <label asp-for="Destacado" class="form-check-label"></label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input asp-for="Activo" class="form-check-input" type="checkbox" />
+                                <label asp-for="Activo" class="form-check-label"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-save"></i> Actualizar Producto
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="bi bi-image"></i> Imagen Actual</h5>
+            </div>
+            <div class="card-body text-center">
+                @if (!string.IsNullOrEmpty(Model.ImagenActual))
+                {
+                    <img id="imagePreview" src="@Model.ImagenActual" class="img-fluid rounded" alt="Imagen actual" />
+                }
+                else
+                {
+                    <img id="imagePreview" src="/img/productos/default.jpg" class="img-fluid rounded" alt="Sin imagen" />
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        document.querySelector('input[type="file"]').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagePreview').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+}

@@ -1,0 +1,222 @@
+﻿@model EcommerceSystem.Models.Entities.Carrito
+
+@{
+    ViewData["Title"] = "Finalizar Compra";
+}
+
+<div class="container py-4">
+    <h2 class="mb-4">
+        <i class="bi bi-credit-card"></i> Finalizar Compra
+    </h2>
+
+    <!-- Barra de Progreso -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="progress" style="height: 30px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: 50%;">
+                    1. Carrito
+                </div>
+                <div class="progress-bar bg-primary" role="progressbar" style="width: 50%;">
+                    2. Finalizar
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Formulario de Compra -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-person-circle"></i> Información de Contacto</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="ConfirmarOrden" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre Completo <span class="text-danger">*</span></label>
+                                <input type="text" name="nombreCompleto" class="form-control" required 
+                                       placeholder="Juan Pérez">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email <span class="text-danger">*</span></label>
+                                <input type="email" name="email" class="form-control" required 
+                                       placeholder="email@ejemplo.com">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Teléfono <span class="text-danger">*</span></label>
+                                <input type="tel" name="telefono" class="form-control" required 
+                                       placeholder="8888-8888">
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <h5 class="mb-3"><i class="bi bi-geo-alt"></i> Dirección de Envío</h5>
+
+                        <div class="mb-3">
+                            <label class="form-label">Dirección Completa <span class="text-danger">*</span></label>
+                            <textarea name="direccion" class="form-control" rows="3" required 
+                                      placeholder="Calle, número, ciudad, provincia, código postal"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Notas del Pedido (Opcional)</label>
+                            <textarea name="notas" class="form-control" rows="2" 
+                                      placeholder="Instrucciones especiales para la entrega..."></textarea>
+                        </div>
+
+                        <hr>
+
+                        <h5 class="mb-3"><i class="bi bi-credit-card"></i> Método de Pago</h5>
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> 
+                            El pago se realizará contra entrega. Pronto tendremos pagos en línea disponibles.
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="metodoPago" id="contraentrega" 
+                                   value="Contra Entrega" checked>
+                            <label class="form-check-label" for="contraentrega">
+                                <i class="bi bi-cash"></i> Pago Contra Entrega
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="metodoPago" id="transferencia" 
+                                   value="Transferencia" disabled>
+                            <label class="form-check-label text-muted" for="transferencia">
+                                <i class="bi bi-bank"></i> Transferencia Bancaria (Próximamente)
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="radio" name="metodoPago" id="tarjeta" 
+                                   value="Tarjeta" disabled>
+                            <label class="form-check-label text-muted" for="tarjeta">
+                                <i class="bi bi-credit-card-2-front"></i> Tarjeta de Crédito/Débito (Próximamente)
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="terminos" required>
+                            <label class="form-check-label" for="terminos">
+                                Acepto los <a href="#" data-bs-toggle="modal" data-bs-target="#terminosModal">
+                                    términos y condiciones
+                                </a> <span class="text-danger">*</span>
+                            </label>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Volver al Carrito
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> Confirmar Pedido
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumen del Pedido -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Resumen del Pedido</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="mb-3">Productos (@Model.Items.Count)</h6>
+                    
+                    @foreach (var item in Model.Items)
+                    {
+                        <div class="d-flex justify-content-between mb-2">
+                            <small>@item.Producto.Nombre x @item.Cantidad</small>
+                            <small class="text-muted">@((item.Producto.Precio * item.Cantidad).ToString("C"))</small>
+                        </div>
+                    }
+
+                    <hr>
+
+                    @{
+                        var subtotal = Model.Items.Sum(i => i.Producto.Precio * i.Cantidad);
+                        var impuesto = subtotal * 0.13m;
+                        var envio = subtotal >= 50 ? 0 : 5;
+                        var total = subtotal + impuesto + envio;
+                    }
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <strong>@subtotal.ToString("C")</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Impuesto (13%):</span>
+                        <strong>@impuesto.ToString("C")</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Envío:</span>
+                        <strong>
+                            @if (envio == 0)
+                            {
+                                <span class="text-success">GRATIS</span>
+                            }
+                            else
+                            {
+                                @envio.ToString("C")
+                            }
+                        </strong>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <h5>Total a Pagar:</h5>
+                        <h4 class="text-success">@total.ToString("C")</h4>
+                    </div>
+
+                    <div class="alert alert-light border">
+                        <small>
+                            <i class="bi bi-truck"></i> Tiempo de entrega estimado: 2-3 días hábiles
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Términos y Condiciones -->
+<div class="modal fade" id="terminosModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Términos y Condiciones</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Aceptación de Términos</h6>
+                <p>Al realizar una compra en nuestro sitio, usted acepta estos términos y condiciones.</p>
+                
+                <h6>2. Política de Envíos</h6>
+                <p>Los envíos se realizan en 2-3 días hábiles. Envío gratis en compras mayores a $50.</p>
+                
+                <h6>3. Política de Devoluciones</h6>
+                <p>Aceptamos devoluciones dentro de los 30 días posteriores a la compra.</p>
+                
+                <h6>4. Privacidad</h6>
+                <p>Sus datos personales están protegidos y no serán compartidos con terceros.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Acepto</button>
+            </div>
+        </div>
+    </div>
+</div>

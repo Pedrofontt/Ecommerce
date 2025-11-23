@@ -1,0 +1,358 @@
+﻿@model EcommerceSystem.Models.Entities.Orden
+
+@{
+    ViewData["Title"] = "Detalles de Orden";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Órdenes</a></li>
+                <li class="breadcrumb-item active">@Model.NumeroOrden</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-receipt"></i> Orden #@Model.NumeroOrden</h2>
+    <div>
+        @switch (Model.Estado)
+        {
+            case "Pendiente":
+                <span class="badge bg-warning text-dark fs-5">Pendiente</span>
+                break;
+            case "Confirmado":
+                <span class="badge bg-info fs-5">Confirmado</span>
+                break;
+            case "Enviado":
+                <span class="badge bg-primary fs-5">Enviado</span>
+                break;
+            case "Entregado":
+                <span class="badge bg-success fs-5">Entregado</span>
+                break;
+            case "Cancelado":
+                <span class="badge bg-danger fs-5">Cancelado</span>
+                break;
+        }
+    </div>
+</div>
+
+<div class="row">
+    <!-- Información Principal -->
+    <div class="col-md-8">
+        <!-- Datos del Cliente -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-person"></i> Información del Cliente</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>Nombre:</strong> @Model.Cliente.NombreCompleto</p>
+                        <p class="mb-2"><strong>Email:</strong> @Model.Cliente.Email</p>
+                        <p class="mb-0"><strong>Teléfono:</strong> @Model.Cliente.Telefono</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>Dirección de Envío:</strong></p>
+                        <p class="mb-0">@Model.DireccionEnvio</p>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.NotasCliente))
+                {
+                    <hr>
+                    <p class="mb-1"><strong>Notas del Cliente:</strong></p>
+                    <p class="text-muted mb-0">@Model.NotasCliente</p>
+                }
+                @if (!string.IsNullOrEmpty(Model.NotasInternas))
+                {
+                    <hr>
+                    <p class="mb-1"><strong>Notas Internas:</strong></p>
+                    <p class="text-muted mb-0">@Model.NotasInternas</p>
+                }
+            </div>
+        </div>
+
+        <!-- Productos -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-box-seam"></i> Productos</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 80px;">Imagen</th>
+                                <th>Producto</th>
+                                <th class="text-center">Cantidad</th>
+                                <th class="text-end">Precio Unit.</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var detalle in Model.Detalles)
+                            {
+                                <tr>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(detalle.Producto.ImagenPrincipal))
+                                        {
+                                            <img src="@detalle.Producto.ImagenPrincipal" alt="@detalle.Producto.Nombre" 
+                                                 class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
+                                        }
+                                        else
+                                        {
+                                            <img src="/img/productos/default.jpg" alt="Sin imagen" 
+                                                 class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
+                                        }
+                                    </td>
+                                    <td class="align-middle">
+                                        <strong>@detalle.Producto.Nombre</strong>
+                                        <br>
+                                        <small class="text-muted">SKU: @detalle.Producto.SKU</small>
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        <span class="badge bg-secondary">@detalle.Cantidad</span>
+                                    </td>
+                                    <td class="align-middle text-end">@detalle.PrecioUnitario.ToString("C")</td>
+                                    <td class="align-middle text-end">
+                                        <strong>@detalle.Subtotal.ToString("C")</strong>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>Subtotal:</strong></td>
+                                <td class="text-end">@Model.Subtotal.ToString("C")</td>
+                            </tr>
+                            @if (Model.Descuento > 0)
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-end"><strong>Descuento:</strong></td>
+                                    <td class="text-end text-danger">-@Model.Descuento.ToString("C")</td>
+                                </tr>
+                            }
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>Impuesto:</strong></td>
+                                <td class="text-end">@Model.Impuesto.ToString("C")</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>Costo de Envío:</strong></td>
+                                <td class="text-end">@Model.CostoEnvio.ToString("C")</td>
+                            </tr>
+                            <tr class="table-primary">
+                                <td colspan="4" class="text-end"><h5 class="mb-0">Total:</h5></td>
+                                <td class="text-end"><h5 class="mb-0">@Model.Total.ToString("C")</h5></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline de Estado -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Historial</h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <i class="bi bi-circle-fill text-primary"></i>
+                        <div class="ms-3">
+                            <strong>Orden Creada</strong>
+                            <br>
+                            <small class="text-muted">@Model.FechaOrden.ToString("dd/MM/yyyy HH:mm")</small>
+                        </div>
+                    </div>
+
+                    @if (Model.FechaPago.HasValue)
+                    {
+                        <div class="timeline-item">
+                            <i class="bi bi-circle-fill text-info"></i>
+                            <div class="ms-3">
+                                <strong>Pago Confirmado</strong>
+                                <br>
+                                <small class="text-muted">@Model.FechaPago.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                            </div>
+                        </div>
+                    }
+
+                    @if (Model.FechaEnvio.HasValue)
+                    {
+                        <div class="timeline-item">
+                            <i class="bi bi-circle-fill text-primary"></i>
+                            <div class="ms-3">
+                                <strong>Orden Enviada</strong>
+                                <br>
+                                <small class="text-muted">@Model.FechaEnvio.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                                @if (!string.IsNullOrEmpty(Model.NumeroSeguimiento))
+                                {
+                                    <br>
+                                    <small>Tracking: <code>@Model.NumeroSeguimiento</code></small>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    @if (Model.FechaEntrega.HasValue)
+                    {
+                        <div class="timeline-item">
+                            <i class="bi bi-circle-fill text-success"></i>
+                            <div class="ms-3">
+                                <strong>Orden Entregada</strong>
+                                <br>
+                                <small class="text-muted">@Model.FechaEntrega.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel de Acciones -->
+    <div class="col-md-4">
+        <div class="card shadow-sm sticky-top" style="top: 20px;">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-gear"></i> Acciones</h5>
+            </div>
+            <div class="card-body">
+                <!-- Cambiar Estado -->
+                @if (Model.Estado != "Cancelado" && Model.Estado != "Entregado")
+                {
+                    <h6 class="mb-3">Cambiar Estado</h6>
+                    
+                    @if (Model.Estado == "Pendiente")
+                    {
+                        <form asp-action="CambiarEstado" method="post" class="mb-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id">
+                            <input type="hidden" name="nuevoEstado" value="Confirmado">
+                            <button type="submit" class="btn btn-info w-100">
+                                <i class="bi bi-check-circle"></i> Confirmar Orden
+                            </button>
+                        </form>
+                    }
+                    
+                    @if (Model.Estado == "Confirmado")
+                    {
+                        <form asp-action="CambiarEstado" method="post" class="mb-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id">
+                            <input type="hidden" name="nuevoEstado" value="Enviado">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-truck"></i> Marcar como Enviado
+                            </button>
+                        </form>
+                    }
+                    
+                    @if (Model.Estado == "Enviado")
+                    {
+                        <form asp-action="CambiarEstado" method="post" class="mb-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id">
+                            <input type="hidden" name="nuevoEstado" value="Entregado">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-check-all"></i> Marcar como Entregado
+                            </button>
+                        </form>
+                    }
+
+                    <hr>
+                }
+
+                <!-- Cancelar Orden -->
+                @if (Model.Estado == "Pendiente" || Model.Estado == "Confirmado")
+                {
+                    <h6 class="mb-3 text-danger">Zona de Peligro</h6>
+                    <form asp-action="Cancelar" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id">
+                        <button type="submit" class="btn btn-danger w-100" 
+                                onclick="return confirm('¿Cancelar esta orden? El stock será devuelto.')">
+                            <i class="bi bi-x-circle"></i> Cancelar Orden
+                        </button>
+                    </form>
+                }
+
+                <hr>
+
+                <!-- Otras Acciones -->
+                <h6 class="mb-3">Otras Acciones</h6>
+                
+                <button onclick="window.print()" class="btn btn-outline-secondary w-100 mb-2">
+                    <i class="bi bi-printer"></i> Imprimir
+                </button>
+
+                <a asp-action="Index" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-arrow-left"></i> Volver al Listado
+                </a>
+            </div>
+        </div>
+
+        <!-- Información Adicional -->
+        <div class="card shadow-sm mt-3">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">Información Adicional</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-2">
+                    <strong>Fecha de Creación:</strong>
+                    <br>
+                    <small>@Model.FechaOrden.ToString("dd/MM/yyyy HH:mm")</small>
+                </p>
+                <p class="mb-2">
+                    <strong>Total de Productos:</strong>
+                    <br>
+                    <small>@Model.Detalles.Sum(d => d.Cantidad) unidades</small>
+                </p>
+                <p class="mb-0">
+                    <strong>Método de Pago:</strong>
+                    <br>
+                    <small>
+                        @if (Model.Pagos != null && Model.Pagos.Any())
+                        {
+                            @Model.Pagos.First().MetodoPago
+                        }
+                        else
+                        {
+                            <span class="text-muted">Contra Entrega</span>
+                        }
+                    </small>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 5px;
+        top: 5px;
+        bottom: 5px;
+        width: 2px;
+        background: #dee2e6;
+    }
+    .timeline-item {
+        position: relative;
+        padding-bottom: 20px;
+    }
+    .timeline-item i {
+        position: absolute;
+        left: -26px;
+        background: white;
+    }
+    
+    @@media print {
+        .card-header, .btn, nav, .sticky-top { display: none !important; }
+    }
+</style>

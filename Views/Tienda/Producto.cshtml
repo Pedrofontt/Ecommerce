@@ -1,0 +1,231 @@
+﻿@model EcommerceSystem.Models.Entities.Producto
+
+@{
+    ViewData["Title"] = Model.Nombre;
+}
+
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Inicio</a></li>
+        <li class="breadcrumb-item"><a asp-action="Index">Tienda</a></li>
+        @if (Model.Categoria != null)
+        {
+            <li class="breadcrumb-item"><a asp-action="Categoria" asp-route-id="@Model.Categoria.Id">@Model.Categoria.Nombre</a></li>
+        }
+        <li class="breadcrumb-item active">@Model.Nombre</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <!-- Imagen del Producto -->
+    <div class="col-md-5 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                @if (!string.IsNullOrEmpty(Model.ImagenPrincipal))
+                {
+                    <img src="@Model.ImagenPrincipal" class="img-fluid rounded" alt="@Model.Nombre" id="mainImage">
+                }
+                else
+                {
+                    <img src="/img/productos/default.jpg" class="img-fluid rounded" alt="Sin imagen" id="mainImage">
+                }
+            </div>
+            
+            @if (Model.Imagenes != null && Model.Imagenes.Any())
+            {
+                <div class="card-footer bg-white">
+                    <div class="row g-2">
+                        @foreach (var imagen in Model.Imagenes.Take(4))
+                        {
+                            <div class="col-3">
+                                <img src="@imagen.RutaImagen" class="img-thumbnail cursor-pointer" 
+                                     style="cursor: pointer; height: 60px; width: 100%; object-fit: cover;"
+                                     onclick="document.getElementById('mainImage').src='@imagen.RutaImagen'">
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Información del Producto -->
+    <div class="col-md-7">
+        <div class="mb-3">
+            @if (Model.Categoria != null)
+            {
+                <span class="badge bg-secondary">@Model.Categoria.Nombre</span>
+            }
+            @if (Model.Marca != null)
+            {
+                <span class="badge bg-info">@Model.Marca.Nombre</span>
+            }
+            @if (Model.Destacado)
+            {
+                <span class="badge bg-warning text-dark">
+                    <i class="bi bi-star-fill"></i> Destacado
+                </span>
+            }
+        </div>
+
+        <h1 class="display-5 fw-bold mb-3">@Model.Nombre</h1>
+
+        <div class="mb-3">
+            <small class="text-muted">SKU: @Model.SKU</small>
+        </div>
+
+        <div class="mb-4">
+            @if (Model.PrecioComparacion.HasValue && Model.PrecioComparacion > Model.Precio)
+            {
+                <div class="mb-2">
+                    <span class="text-muted text-decoration-line-through h5">
+                        @Model.PrecioComparacion.Value.ToString("C")
+                    </span>
+                    <span class="badge bg-danger ms-2">
+                        AHORRA @(((Model.PrecioComparacion.Value - Model.Precio) / Model.PrecioComparacion.Value * 100).ToString("0"))%
+                    </span>
+                </div>
+            }
+            <h2 class="text-primary mb-0">@Model.Precio.ToString("C")</h2>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.DescripcionCorta))
+        {
+            <p class="lead">@Model.DescripcionCorta</p>
+        }
+
+        <div class="mb-4">
+            @if (Model.Stock > 0)
+            {
+                @if (Model.Stock <= Model.StockMinimo)
+                {
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>¡Últimas unidades!</strong> Solo quedan @Model.Stock en stock
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle"></i> Disponible en stock (@Model.Stock unidades)
+                    </div>
+                }
+
+                <form asp-controller="Carrito" asp-action="Agregar" method="post" class="row g-3">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="productoId" value="@Model.Id">
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">Cantidad</label>
+                        <input type="number" name="cantidad" class="form-control" value="1" min="1" max="@Model.Stock">
+                    </div>
+                    
+                    <div class="col-md-9 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-cart-plus"></i> Agregar al Carrito
+                        </button>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <div class="alert alert-danger">
+                    <i class="bi bi-x-circle"></i> Producto agotado
+                </div>
+                <button class="btn btn-secondary btn-lg w-100" disabled>
+                    No Disponible
+                </button>
+            }
+        </div>
+
+        <hr>
+
+        <!-- Descripción Completa -->
+        @if (!string.IsNullOrEmpty(Model.Descripcion))
+        {
+            <div class="mb-4">
+                <h5 class="fw-bold">Descripción</h5>
+                <p class="text-muted">@Model.Descripcion</p>
+            </div>
+        }
+
+        <!-- Especificaciones -->
+        @if (Model.Peso.HasValue || !string.IsNullOrEmpty(Model.Dimensiones))
+        {
+            <div class="mb-4">
+                <h5 class="fw-bold">Especificaciones</h5>
+                <table class="table table-sm">
+                    @if (Model.Peso.HasValue)
+                    {
+                        <tr>
+                            <td class="fw-bold" style="width: 30%;">Peso:</td>
+                            <td>@Model.Peso.Value kg</td>
+                        </tr>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Dimensiones))
+                    {
+                        <tr>
+                            <td class="fw-bold">Dimensiones:</td>
+                            <td>@Model.Dimensiones</td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        }
+
+        <!-- Compartir -->
+        <div>
+            <h6 class="fw-bold">Compartir:</h6>
+            <div class="btn-group">
+                <a href="https://www.facebook.com/sharer/sharer.php?u=@Url.ActionLink("Producto", "Tienda", new { id = Model.Id }, Context.Request.Scheme)" 
+                   target="_blank" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-facebook"></i>
+                </a>
+                <a href="https://twitter.com/intent/tweet?url=@Url.ActionLink("Producto", "Tienda", new { id = Model.Id }, Context.Request.Scheme)&text=@Model.Nombre" 
+                   target="_blank" class="btn btn-sm btn-outline-info">
+                    <i class="bi bi-twitter"></i>
+                </a>
+                <a href="https://wa.me/?text=@Model.Nombre - @Url.ActionLink("Producto", "Tienda", new { id = Model.Id }, Context.Request.Scheme)" 
+                   target="_blank" class="btn btn-sm btn-outline-success">
+                    <i class="bi bi-whatsapp"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Productos Relacionados -->
+@if (ViewBag.ProductosRelacionados != null && (ViewBag.ProductosRelacionados as List<EcommerceSystem.Models.Entities.Producto>).Any())
+{
+    <hr class="my-5">
+    
+    <h3 class="mb-4">Productos Relacionados</h3>
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+        @foreach (var relacionado in ViewBag.ProductosRelacionados as List<EcommerceSystem.Models.Entities.Producto>)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <a asp-action="Producto" asp-route-id="@relacionado.Id">
+                        @if (!string.IsNullOrEmpty(relacionado.ImagenPrincipal))
+                        {
+                            <img src="@relacionado.ImagenPrincipal" class="card-img-top" alt="@relacionado.Nombre" 
+                                 style="height: 150px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <img src="/img/productos/default.jpg" class="card-img-top" alt="Sin imagen" 
+                                 style="height: 150px; object-fit: cover;">
+                        }
+                    </a>
+                    <div class="card-body">
+                        <a asp-action="Producto" asp-route-id="@relacionado.Id" class="text-decoration-none text-dark">
+                            <h6 class="card-title">@relacionado.Nombre</h6>
+                        </a>
+                        <h5 class="text-primary">@relacionado.Precio.ToString("C")</h5>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

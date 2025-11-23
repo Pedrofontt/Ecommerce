@@ -1,0 +1,110 @@
+﻿@model IEnumerable<EcommerceSystem.Models.Entities.AlertaStock>
+
+@{
+    ViewData["Title"] = "Alertas de Stock";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-bell"></i> Alertas de Stock</h2>
+    <span class="badge bg-danger fs-5">@Model.Count() Pendientes</span>
+</div>
+
+@if (Model.Any())
+{
+    <div class="row">
+        @foreach (var alerta in Model)
+        {
+            <div class="col-md-6 mb-3">
+                <div class="card shadow-sm border-start border-5 @(alerta.Tipo == "StockAgotado" ? "border-danger" : alerta.Tipo == "StockCritico" ? "border-warning" : "border-info")">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="card-title mb-1">
+                                    <a asp-area="Admin" asp-controller="Productos" asp-action="Details" asp-route-id="@alerta.ProductoId" 
+                                       class="text-decoration-none text-dark">
+                                        @alerta.Producto.Nombre
+                                    </a>
+                                </h5>
+                                <p class="card-text text-muted mb-2">
+                                    <small>SKU: @alerta.Producto.SKU</small>
+                                </p>
+                            </div>
+                            @switch (alerta.Tipo)
+                            {
+                                case "StockAgotado":
+                                    <span class="badge bg-danger">AGOTADO</span>
+                                    break;
+                                case "StockCritico":
+                                    <span class="badge bg-warning text-dark">CRÍTICO</span>
+                                    break;
+                                default:
+                                    <span class="badge bg-info">BAJO</span>
+                                    break;
+                            }
+                        </div>
+
+                        <div class="alert alert-light border mb-3 mt-2">
+                            <i class="bi bi-info-circle"></i> @alerta.Mensaje
+                        </div>
+
+                        <div class="row text-center mb-3">
+                            <div class="col-4">
+                                <small class="text-muted d-block">Stock Actual</small>
+                                <strong class="@(alerta.Producto.Stock == 0 ? "text-danger" : "text-warning")">
+                                    @alerta.Producto.Stock
+                                </strong>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block">Stock Mínimo</small>
+                                <strong>@alerta.Producto.StockMinimo</strong>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block">Faltante</small>
+                                <strong class="text-danger">
+                                    @Math.Max(0, alerta.Producto.StockMinimo - alerta.Producto.Stock)
+                                </strong>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="bi bi-clock"></i> @alerta.Fecha.ToString("dd/MM/yyyy HH:mm")
+                            </small>
+                            
+                            <div class="btn-group btn-group-sm">
+                                <a asp-area="Admin" asp-controller="Productos" asp-action="Edit" asp-route-id="@alerta.ProductoId" 
+                                   class="btn btn-outline-primary">
+                                    <i class="bi bi-pencil"></i> Ajustar Stock
+                                </a>
+                                <form asp-action="MarcarRevisada" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@alerta.Id">
+                                    <button type="submit" class="btn btn-outline-success">
+                                        <i class="bi bi-check"></i> Marcar Revisada
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm text-center py-5">
+                <div class="card-body">
+                    <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
+                    <h3 class="mt-3">¡Todo en Orden!</h3>
+                    <p class="text-muted">No hay alertas de stock pendientes</p>
+                    <a asp-area="Admin" asp-controller="Productos" asp-action="Index" class="btn btn-primary">
+                        Ver Productos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+}

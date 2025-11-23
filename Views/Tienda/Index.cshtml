@@ -1,0 +1,296 @@
+﻿@model EcommerceSystem.Utilities.PaginatedList<EcommerceSystem.Models.Entities.Producto>
+
+@{
+    ViewData["Title"] = "Tienda";
+}
+
+<!-- Banner -->
+<div class="bg-primary text-white p-4 rounded mb-4">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1 class="display-5 fw-bold">Explora Nuestra Tienda</h1>
+            <p class="lead">Encuentra los mejores productos al mejor precio</p>
+        </div>
+        <div class="col-md-4">
+            <form asp-action="Buscar" method="get" class="d-flex">
+                <input type="text" name="q" class="form-control me-2" placeholder="Buscar productos..." value="@ViewData["Query"]">
+                <button type="submit" class="btn btn-light">
+                    <i class="bi bi-search"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Sidebar de Filtros -->
+    <div class="col-md-3 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Index" method="get">
+                    <!-- Categorías -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold">Categorías</h6>
+                        @if (ViewBag.Categorias != null)
+                        {
+                            @foreach (var categoria in ViewBag.Categorias as List<EcommerceSystem.Models.Entities.Categoria>)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="categoriaId" 
+                                           value="@categoria.Id" id="cat@(categoria.Id)"
+                                           @(ViewData["CategoriaId"]?.ToString() == categoria.Id.ToString() ? "checked" : "")
+                                           onchange="this.form.submit()">
+                                    <label class="form-check-label" for="cat@(categoria.Id)">
+                                        @categoria.Nombre
+                                    </label>
+                                </div>
+                            }
+                            @if (ViewData["CategoriaId"] != null)
+                            {
+                                <a href="@Url.Action("Index")" class="btn btn-sm btn-link text-decoration-none">
+                                    <i class="bi bi-x"></i> Limpiar
+                                </a>
+                            }
+                        }
+                    </div>
+
+                    <hr>
+
+                    <!-- Marcas -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold">Marcas</h6>
+                        @if (ViewBag.Marcas != null)
+                        {
+                            @foreach (var marca in ViewBag.Marcas as List<EcommerceSystem.Models.Entities.Marca>)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="marcaId" 
+                                           value="@marca.Id" id="marca@(marca.Id)"
+                                           @(ViewData["MarcaId"]?.ToString() == marca.Id.ToString() ? "checked" : "")
+                                           onchange="this.form.submit()">
+                                    <label class="form-check-label" for="marca@(marca.Id)">
+                                        @marca.Nombre
+                                    </label>
+                                </div>
+                            }
+                            @if (ViewData["MarcaId"] != null)
+                            {
+                                <a href="@Url.Action("Index")" class="btn btn-sm btn-link text-decoration-none">
+                                    <i class="bi bi-x"></i> Limpiar
+                                </a>
+                            }
+                        }
+                    </div>
+
+                    <hr>
+
+                    <!-- Rango de Precio -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold">Precio</h6>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <input type="number" name="precioMin" class="form-control form-control-sm" 
+                                       placeholder="Mín" step="0.01" value="@ViewData["PrecioMin"]">
+                            </div>
+                            <div class="col-6">
+                                <input type="number" name="precioMax" class="form-control form-control-sm" 
+                                       placeholder="Máx" step="0.01" value="@ViewData["PrecioMax"]">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-primary w-100 mt-2">Aplicar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Productos -->
+    <div class="col-md-9">
+        <!-- Barra de Ordenamiento -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <strong>@Model.TotalItems</strong> productos encontrados
+            </div>
+            <div>
+                <form asp-action="Index" method="get" class="d-inline">
+                    <input type="hidden" name="categoriaId" value="@ViewData["CategoriaId"]">
+                    <input type="hidden" name="marcaId" value="@ViewData["MarcaId"]">
+                    <input type="hidden" name="precioMin" value="@ViewData["PrecioMin"]">
+                    <input type="hidden" name="precioMax" value="@ViewData["PrecioMax"]">
+                    <input type="hidden" name="busqueda" value="@ViewData["Busqueda"]">
+                    
+                <select name="orden" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()">
+                    <option value="">Ordenar por...</option>
+                    <option value="nombre" selected="@(ViewData["Orden"]?.ToString() == "nombre" ? "selected" : null)">Nombre (A-Z)</option>
+                    <option value="precio_asc" selected="@(ViewData["Orden"]?.ToString() == "precio_asc" ? "selected" : null)">Precio (Menor)</option>
+                    <option value="precio_desc" selected="@(ViewData["Orden"]?.ToString() == "precio_desc" ? "selected" : null)">Precio (Mayor)</option>
+                    <option value="nuevo" selected="@(ViewData["Orden"]?.ToString() == "nuevo" ? "selected" : null)">Más Nuevo</option>
+                </select>
+                </form>
+            </div>
+        </div>
+
+        @if (Model.Any())
+        {
+            <!-- Grid de Productos -->
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+                @foreach (var producto in Model)
+                {
+                    <div class="col">
+                        <div class="card h-100 shadow-sm product-card">
+                            <a asp-action="Producto" asp-route-id="@producto.Id" class="text-decoration-none text-dark">
+                                @if (!string.IsNullOrEmpty(producto.ImagenPrincipal))
+                                {
+                                    <img src="@producto.ImagenPrincipal" class="card-img-top" alt="@producto.Nombre" 
+                                         style="height: 200px; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <img src="/img/productos/default.jpg" class="card-img-top" alt="Sin imagen" 
+                                         style="height: 200px; object-fit: cover;">
+                                }
+                                
+                                @if (producto.PrecioComparacion.HasValue && producto.PrecioComparacion > producto.Precio)
+                                {
+                                    <div class="position-absolute top-0 end-0 m-2">
+                                        <span class="badge bg-danger">
+                                            -@(((producto.PrecioComparacion.Value - producto.Precio) / producto.PrecioComparacion.Value * 100).ToString("0"))%
+                                        </span>
+                                    </div>
+                                }
+                            </a>
+                            
+                            <div class="card-body">
+                                <a asp-action="Producto" asp-route-id="@producto.Id" class="text-decoration-none text-dark">
+                                    <h6 class="card-title">@producto.Nombre</h6>
+                                </a>
+                                
+                                @if (!string.IsNullOrEmpty(producto.DescripcionCorta))
+                                {
+                                    <p class="card-text text-muted small">
+                                        @(producto.DescripcionCorta.Length > 60 ? producto.DescripcionCorta.Substring(0, 60) + "..." : producto.DescripcionCorta)
+                                    </p>
+                                }
+                                
+                                <div class="mb-2">
+                                    @if (producto.PrecioComparacion.HasValue && producto.PrecioComparacion > producto.Precio)
+                                    {
+                                        <small class="text-muted text-decoration-line-through">
+                                            @producto.PrecioComparacion.Value.ToString("C")
+                                        </small>
+                                        <br>
+                                    }
+                                    <h5 class="text-primary mb-0">@producto.Precio.ToString("C")</h5>
+                                </div>
+                                
+                                @if (producto.Stock > 0)
+                                {
+                                    <span class="badge bg-success mb-2">En Stock (@producto.Stock)</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger mb-2">Agotado</span>
+                                }
+                            </div>
+                            
+                            <div class="card-footer bg-white border-0">
+                                @if (producto.Stock > 0)
+                                {
+                                    <form asp-controller="Carrito" asp-action="Agregar" method="post" class="d-grid">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="productoId" value="@producto.Id">
+                                        <input type="hidden" name="cantidad" value="1">
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            <i class="bi bi-cart-plus"></i> Agregar al Carrito
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-secondary btn-sm w-100" disabled>
+                                        No Disponible
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Paginación -->
+            @if (Model.TotalPages > 1)
+            {
+                <nav aria-label="Paginación">
+                    <ul class="pagination justify-content-center">
+                        @if (Model.HasPreviousPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@Url.Action("Index", new { 
+                                    pageNumber = Model.PageIndex - 1,
+                                    categoriaId = ViewData["CategoriaId"],
+                                    marcaId = ViewData["MarcaId"],
+                                    precioMin = ViewData["PrecioMin"],
+                                    precioMax = ViewData["PrecioMax"],
+                                    busqueda = ViewData["Busqueda"],
+                                    orden = ViewData["Orden"]
+                                })">Anterior</a>
+                            </li>
+                        }
+
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { 
+                                    pageNumber = i,
+                                    categoriaId = ViewData["CategoriaId"],
+                                    marcaId = ViewData["MarcaId"],
+                                    precioMin = ViewData["PrecioMin"],
+                                    precioMax = ViewData["PrecioMax"],
+                                    busqueda = ViewData["Busqueda"],
+                                    orden = ViewData["Orden"]
+                                })">@i</a>
+                            </li>
+                        }
+
+                        @if (Model.HasNextPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@Url.Action("Index", new { 
+                                    pageNumber = Model.PageIndex + 1,
+                                    categoriaId = ViewData["CategoriaId"],
+                                    marcaId = ViewData["MarcaId"],
+                                    precioMin = ViewData["PrecioMin"],
+                                    precioMax = ViewData["PrecioMax"],
+                                    busqueda = ViewData["Busqueda"],
+                                    orden = ViewData["Orden"]
+                                })">Siguiente</a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+        }
+        else
+        {
+            <div class="alert alert-info text-center">
+                <i class="bi bi-search"></i>
+                <h5>No se encontraron productos</h5>
+                <p>Intenta ajustar los filtros o buscar otro término</p>
+                <a asp-action="Index" class="btn btn-primary">Ver Todos los Productos</a>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .product-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
+    }
+</style>

@@ -1,0 +1,206 @@
+﻿@model EcommerceSystem.Models.Entities.Producto
+
+@{
+    ViewData["Title"] = "Detalles del Producto";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Productos</a></li>
+                <li class="breadcrumb-item active">Detalles</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="bi bi-info-circle"></i> Información del Producto</h4>
+                @if (Model.Destacado)
+                {
+                    <span class="badge bg-warning text-dark">
+                        <i class="bi bi-star-fill"></i> Destacado
+                    </span>
+                }
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">SKU</dt>
+                    <dd class="col-sm-9">
+                        <code>@Model.SKU</code>
+                    </dd>
+
+                    <dt class="col-sm-3">Nombre</dt>
+                    <dd class="col-sm-9">
+                        <h5>@Model.Nombre</h5>
+                    </dd>
+
+                    <dt class="col-sm-3">Descripción Corta</dt>
+                    <dd class="col-sm-9">@Model.DescripcionCorta</dd>
+
+                    <dt class="col-sm-3">Descripción Completa</dt>
+                    <dd class="col-sm-9">
+                        @if (!string.IsNullOrEmpty(Model.Descripcion))
+                        {
+                            @Model.Descripcion
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sin descripción</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Precio</dt>
+                    <dd class="col-sm-9">
+                        <h4 class="text-primary mb-0">@Model.Precio.ToString("C")</h4>
+                        @if (Model.PrecioComparacion.HasValue && Model.PrecioComparacion > Model.Precio)
+                        {
+                            <small class="text-muted">
+                                <del>@Model.PrecioComparacion.Value.ToString("C")</del>
+                                <span class="badge bg-success ms-2">
+                                    @(((Model.PrecioComparacion.Value - Model.Precio) / Model.PrecioComparacion.Value * 100).ToString("0"))% OFF
+                                </span>
+                            </small>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Stock</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.Stock <= Model.StockMinimo)
+                        {
+                            <span class="badge bg-danger fs-6">@Model.Stock unidades</span>
+                            <i class="bi bi-exclamation-triangle text-danger"></i>
+                            <small class="text-danger">Stock bajo (Mínimo: @Model.StockMinimo)</small>
+                        }
+                        else if (Model.Stock <= Model.StockMinimo * 2)
+                        {
+                            <span class="badge bg-warning text-dark fs-6">@Model.Stock unidades</span>
+                            <small class="text-warning">Stock moderado (Mínimo: @Model.StockMinimo)</small>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success fs-6">@Model.Stock unidades</span>
+                            <small class="text-success">Stock suficiente (Mínimo: @Model.StockMinimo)</small>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Categoría</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.Categoria != null)
+                        {
+                            <span class="badge bg-secondary fs-6">@Model.Categoria.Nombre</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sin categoría</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Marca</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.Marca != null)
+                        {
+                            <span class="badge bg-info fs-6">@Model.Marca.Nombre</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sin marca</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Proveedor</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.Proveedor != null)
+                        {
+                            <span class="badge bg-primary fs-6">@Model.Proveedor.Nombre</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sin proveedor</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Estado</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.Activo)
+                        {
+                            <span class="badge bg-success fs-6">
+                                <i class="bi bi-check-circle"></i> Activo
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary fs-6">
+                                <i class="bi bi-x-circle"></i> Inactivo
+                            </span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Fecha de Creación</dt>
+                    <dd class="col-sm-9">@Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                    @if (Model.FechaModificacion.HasValue)
+                    {
+                        <dt class="col-sm-3">Última Modificación</dt>
+                        <dd class="col-sm-9">@Model.FechaModificacion.Value.ToString("dd/MM/yyyy HH:mm")</dd>
+                    }
+                </dl>
+
+                <hr />
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver al Listado
+                    </a>
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="bi bi-image"></i> Imagen Principal</h5>
+            </div>
+            <div class="card-body text-center p-0">
+                @if (!string.IsNullOrEmpty(Model.ImagenPrincipal))
+                {
+                    <img src="@Model.ImagenPrincipal" class="img-fluid" alt="@Model.Nombre" style="max-height: 400px; object-fit: cover; width: 100%;">
+                }
+                else
+                {
+                    <img src="/img/productos/default.jpg" class="img-fluid" alt="Sin imagen" style="max-height: 400px; object-fit: cover; width: 100%;">
+                }
+            </div>
+        </div>
+
+        @if (Model.Imagenes != null && Model.Imagenes.Any())
+        {
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-images"></i> Galería (@Model.Imagenes.Count)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        @foreach (var imagen in Model.Imagenes)
+                        {
+                            <div class="col-6">
+                                <img src="@imagen.RutaImagen" class="img-thumbnail" alt="Imagen" style="height: 100px; width: 100%; object-fit: cover;">
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
