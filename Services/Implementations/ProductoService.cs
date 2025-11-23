@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using EcommerceSystem.Data;
 using EcommerceSystem.Models.Entities;
 using EcommerceSystem.Services.Interfaces;
@@ -8,10 +9,12 @@ namespace EcommerceSystem.Services.Implementations
     public class ProductoService : IProductoService
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<ProductoService> _logger;
 
-        public ProductoService(ApplicationDbContext context)
+        public ProductoService(ApplicationDbContext context, ILogger<ProductoService> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<List<Producto>> ObtenerTodosAsync()
@@ -48,7 +51,7 @@ namespace EcommerceSystem.Services.Implementations
                 .Include(p => p.Marca)
                 .Where(p => p.Activo &&
                     (p.Nombre.Contains(termino) ||
-                     p.Descripcion.Contains(termino) ||
+                     (p.Descripcion != null && p.Descripcion.Contains(termino)) ||
                      p.SKU.Contains(termino)))
                 .ToListAsync();
         }
@@ -87,8 +90,9 @@ namespace EcommerceSystem.Services.Implementations
                 await _context.SaveChangesAsync();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al crear producto: {Nombre}", producto.Nombre);
                 return false;
             }
         }
@@ -102,8 +106,9 @@ namespace EcommerceSystem.Services.Implementations
                 await _context.SaveChangesAsync();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al actualizar producto ID: {Id}", producto.Id);
                 return false;
             }
         }
@@ -120,8 +125,9 @@ namespace EcommerceSystem.Services.Implementations
                 await ActualizarAsync(producto);
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al eliminar producto ID: {Id}", id);
                 return false;
             }
         }

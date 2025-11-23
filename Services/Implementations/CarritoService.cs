@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using EcommerceSystem.Data;
 using EcommerceSystem.Models.Entities;
 using EcommerceSystem.Services.Interfaces;
@@ -8,10 +9,12 @@ namespace EcommerceSystem.Services.Implementations
     public class CarritoService : ICarritoService
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<CarritoService> _logger;
 
-        public CarritoService(ApplicationDbContext context)
+        public CarritoService(ApplicationDbContext context, ILogger<CarritoService> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<Carrito?> ObtenerCarritoActualAsync(string? usuarioId, string? sessionId)
@@ -38,11 +41,13 @@ namespace EcommerceSystem.Services.Implementations
                 }
                 else
                 {
+                    var producto = await _context.Productos.FindAsync(productoId);
                     var nuevoItem = new CarritoItem
                     {
                         CarritoId = carritoId,
                         ProductoId = productoId,
-                        Cantidad = cantidad
+                        Cantidad = cantidad,
+                        PrecioUnitario = producto?.Precio ?? 0
                     };
                     _context.CarritoItems.Add(nuevoItem);
                 }
@@ -50,8 +55,9 @@ namespace EcommerceSystem.Services.Implementations
                 await _context.SaveChangesAsync();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al agregar item al carrito. CarritoId: {CarritoId}, ProductoId: {ProductoId}", carritoId, productoId);
                 return false;
             }
         }
@@ -67,8 +73,9 @@ namespace EcommerceSystem.Services.Implementations
                 await _context.SaveChangesAsync();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al actualizar cantidad del item: {ItemId}", itemId);
                 return false;
             }
         }
@@ -84,8 +91,9 @@ namespace EcommerceSystem.Services.Implementations
                 await _context.SaveChangesAsync();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al eliminar item del carrito: {ItemId}", itemId);
                 return false;
             }
         }
@@ -102,8 +110,9 @@ namespace EcommerceSystem.Services.Implementations
                 await _context.SaveChangesAsync();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al vaciar carrito: {CarritoId}", carritoId);
                 return false;
             }
         }

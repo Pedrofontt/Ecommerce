@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using EcommerceSystem.Data;
 using EcommerceSystem.Models.Entities;
 using EcommerceSystem.Services.Interfaces;
@@ -10,15 +11,18 @@ namespace EcommerceSystem.Services.Implementations
         private readonly ApplicationDbContext _context;
         private readonly IKardexService _kardexService;
         private readonly IAlertaService _alertaService;
+        private readonly ILogger<OrdenService> _logger;
 
         public OrdenService(
             ApplicationDbContext context,
             IKardexService kardexService,
-            IAlertaService alertaService)
+            IAlertaService alertaService,
+            ILogger<OrdenService> logger)
         {
             _context = context;
             _kardexService = kardexService;
             _alertaService = alertaService;
+            _logger = logger;
         }
 
         public async Task<(bool Success, string Message, Orden? Orden)> CrearOrdenAsync(Orden orden)
@@ -143,8 +147,9 @@ namespace EcommerceSystem.Services.Implementations
                 await _context.SaveChangesAsync();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al cambiar estado de orden ID: {OrdenId} a {Estado}", ordenId, nuevoEstado);
                 return false;
             }
         }
@@ -181,8 +186,9 @@ namespace EcommerceSystem.Services.Implementations
 
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al cancelar orden ID: {OrdenId}", ordenId);
                 await transaction.RollbackAsync();
                 return false;
             }

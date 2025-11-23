@@ -60,7 +60,7 @@ namespace EcommerceSystem.Controllers
             {
                 productos = productos.Where(p =>
                     p.Nombre.Contains(busqueda) ||
-                    p.Descripcion.Contains(busqueda));
+                    (p.Descripcion != null && p.Descripcion.Contains(busqueda)));
                 ViewData["Busqueda"] = busqueda;
             }
 
@@ -162,7 +162,7 @@ namespace EcommerceSystem.Controllers
                 .Include(p => p.Marca)
                 .Where(p => p.Activo && p.Stock > 0 &&
                     (p.Nombre.Contains(q) ||
-                     p.Descripcion.Contains(q) ||
+                     (p.Descripcion != null && p.Descripcion.Contains(q)) ||
                      p.SKU.Contains(q)));
 
             int pageSize = 12;
