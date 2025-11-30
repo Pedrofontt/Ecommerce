@@ -4,51 +4,256 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-5">
-        <div class="card shadow-sm mt-5">
-            <div class="card-header bg-primary text-white text-center">
-                <h4 class="mb-0"><i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión</h4>
-            </div>
-            <div class="card-body p-4">
-                <form method="post" action="/Account/Login">
-                    @Html.AntiForgeryToken()
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-                    
-                    <div class="mb-3">
-                        <label asp-for="Email" class="form-label"></label>
-                        <input asp-for="Email" class="form-control" placeholder="admin@ecommerce.com" />
-                        <span asp-validation-for="Email" class="text-danger"></span>
+<div class="row justify-content-center mt-5">
+    <div class="col-md-10 col-lg-8">
+        <div class="card shadow-lg border-0">
+            <div class="card-body p-0">
+                <div class="row g-0">
+                    <!-- Panel izquierdo - Imagen/Info -->
+                    <div class="col-md-5 d-none d-md-block bg-primary text-white p-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div class="d-flex flex-column h-100 justify-content-center">
+                            <h2 class="mb-4">
+                                <i class="bi bi-cart-check-fill"></i> Bienvenido
+                            </h2>
+                            <p class="lead">Accede a tu cuenta para gestionar tus compras y pedidos.</p>
+                            <hr class="my-4 bg-white opacity-25">
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill me-2"></i> Seguimiento de pedidos</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill me-2"></i> Historial de compras</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill me-2"></i> Gestión de perfil</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill me-2"></i> Ofertas exclusivas</li>
+                            </ul>
+                        </div>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label asp-for="Password" class="form-label"></label>
-                        <input asp-for="Password" class="form-control" placeholder="Admin123!" />
-                        <span asp-validation-for="Password" class="text-danger"></span>
+
+                    <!-- Panel derecho - Formularios -->
+                    <div class="col-md-7 p-5">
+                        <!-- Tabs para Login y Registro -->
+                        <ul class="nav nav-pills nav-fill mb-4" id="authTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="login-tab" data-bs-toggle="pill" data-bs-target="#login" type="button" role="tab">
+                                    <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="register-tab" data-bs-toggle="pill" data-bs-target="#register" type="button" role="tab">
+                                    <i class="bi bi-person-plus"></i> Registrarse
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="authTabContent">
+                            <!-- Tab de Login -->
+                            <div class="tab-pane fade show active" id="login" role="tabpanel">
+                                <h4 class="mb-4">Inicia sesión en tu cuenta</h4>
+                                
+                                <form method="post" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]">
+                                    @Html.AntiForgeryToken()
+                                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                                    
+                                    <div class="mb-3">
+                                        <label asp-for="Email" class="form-label">Correo Electrónico</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                            <input asp-for="Email" class="form-control" placeholder="tu@email.com" autofocus />
+                                        </div>
+                                        <span asp-validation-for="Email" class="text-danger small"></span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label asp-for="Password" class="form-label">Contraseña</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                            <input asp-for="Password" class="form-control" placeholder="••••••••" />
+                                        </div>
+                                        <span asp-validation-for="Password" class="text-danger small"></span>
+                                    </div>
+                                    
+                                    <div class="mb-3 d-flex justify-content-between align-items-center">
+                                        <div class="form-check">
+                                            <input asp-for="RememberMe" class="form-check-input" />
+                                            <label asp-for="RememberMe" class="form-check-label small">Recordarme</label>
+                                        </div>
+                                        <a href="#" class="small text-decoration-none">¿Olvidaste tu contraseña?</a>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <div class="text-center mt-4">
+                                    <p class="text-muted small">¿No tienes una cuenta? 
+                                        <a href="#" onclick="document.getElementById('register-tab').click(); return false;" class="text-decoration-none">Regístrate aquí</a>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Tab de Registro -->
+                            <div class="tab-pane fade" id="register" role="tabpanel">
+                                <h4 class="mb-4">Crea tu cuenta</h4>
+                                
+                                @if (TempData["Error"] != null)
+                                {
+                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        <i class="bi bi-exclamation-triangle"></i> @TempData["Error"]
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                }
+                                
+                                <form method="post" asp-controller="Account" asp-action="Register" id="registerForm">
+                                    @Html.AntiForgeryToken()
+                                    
+                                    <div class="mb-3">
+                                        <label for="NombreCompleto" class="form-label">Nombre Completo</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                            <input type="text" class="form-control" id="NombreCompleto" name="NombreCompleto" placeholder="Juan Pérez" required />
+                                        </div>
+                                        <span class="text-danger small" id="nombreError"></span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="Email" class="form-label">Correo Electrónico</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                            <input type="email" class="form-control" id="Email" name="Email" placeholder="tu@email.com" required />
+                                        </div>
+                                        <span class="text-danger small" id="emailError"></span>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="Telefono" class="form-label">Teléfono (Opcional)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                            <input type="tel" class="form-control" id="Telefono" name="Telefono" placeholder="8888-8888" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="Password" class="form-label">Contraseña</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                            <input type="password" class="form-control" id="Password" name="Password" placeholder="••••••••" required minlength="6" />
+                                        </div>
+                                        <small class="text-muted">Mínimo 6 caracteres, al menos una mayúscula y un número</small>
+                                        <span class="text-danger small" id="passwordError"></span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="ConfirmPassword" class="form-label">Confirmar Contraseña</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                                            <input type="password" class="form-control" id="ConfirmPassword" name="ConfirmPassword" placeholder="••••••••" required />
+                                        </div>
+                                        <span class="text-danger small" id="confirmPasswordError"></span>
+                                    </div>
+
+                                    <div class="mb-3 form-check">
+                                       <input type="checkbox" class="form-check-input" id="AcceptTerms" name="AcceptTerms" value="true" required />
+                                        <label class="form-check-label small" for="AcceptTerms">
+                                            Acepto los <a href="#" class="text-decoration-none">términos y condiciones</a>
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-success btn-lg">
+                                            <i class="bi bi-person-plus"></i> Crear Cuenta
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <div class="text-center mt-4">
+                                    <p class="text-muted small">¿Ya tienes una cuenta? 
+                                        <a href="#" onclick="document.getElementById('login-tab').click(); return false;" class="text-decoration-none">Inicia sesión aquí</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="mb-3 form-check">
-                        <input asp-for="RememberMe" class="form-check-input" />
-                        <label asp-for="RememberMe" class="form-check-label"></label>
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
-                        </button>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
-        
-        <div class="alert alert-info mt-3">
-            <strong>Credenciales Admin:</strong><br>
-            Email: admin@ecommerce.com<br>
-            Password: Admin123!
-        </div>
+
+        <!-- Panel de credenciales de prueba (solo en desarrollo) -->
+        @if (ViewData["ShowTestCredentials"]?.ToString() == "true")
+        {
+            <div class="alert alert-info mt-4">
+                <h6><i class="bi bi-info-circle"></i> Credenciales de Prueba</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Admin:</strong><br>
+                        Email: admin@ecommerce.com<br>
+                        Password: Admin123!
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Cliente:</strong><br>
+                        Email: cliente@test.com<br>
+                        Password: Cliente123!
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Si hay error en TempData, mostrar tab de registro
+        @if (TempData["Error"] != null)
+        {
+            <text>
+            document.addEventListener('DOMContentLoaded', function() {
+                var registerTab = new bootstrap.Tab(document.getElementById('register-tab'));
+                registerTab.show();
+            });
+            </text>
+        }
+        
+        // Validación de contraseñas
+        document.getElementById('registerForm')?.addEventListener('submit', function(e) {
+            var password = document.getElementById('Password').value;
+            var confirmPassword = document.getElementById('ConfirmPassword').value;
+            
+            // Limpiar errores previos
+            document.getElementById('passwordError').textContent = '';
+            document.getElementById('confirmPasswordError').textContent = '';
+            
+            var hasError = false;
+            
+            // Validar longitud mínima
+            if (password.length < 6) {
+                document.getElementById('passwordError').textContent = 'La contraseña debe tener al menos 6 caracteres';
+                hasError = true;
+            }
+            
+            // Validar que tenga mayúscula
+            if (!/[A-Z]/.test(password)) {
+                document.getElementById('passwordError').textContent = 'La contraseña debe tener al menos una mayúscula';
+                hasError = true;
+            }
+            
+            // Validar que tenga número
+            if (!/[0-9]/.test(password)) {
+                document.getElementById('passwordError').textContent = 'La contraseña debe tener al menos un número';
+                hasError = true;
+            }
+            
+            // Validar que coincidan
+            if (password !== confirmPassword) {
+                document.getElementById('confirmPasswordError').textContent = 'Las contraseñas no coinciden';
+                hasError = true;
+            }
+            
+            if (hasError) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    </script>
 }
+

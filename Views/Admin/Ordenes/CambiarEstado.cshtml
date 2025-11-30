@@ -1,0 +1,254 @@
+﻿@model EcommerceSystem.Models.Entities.Orden
+@{
+    ViewData["Title"] = "Cambiar Estado de Orden";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-arrow-repeat"></i> Cambiar Estado de Orden</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver a Detalles
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Orden #@Model.NumeroOrden</h5>
+            </div>
+            <div class="card-body">
+                <!-- Información actual -->
+                <div class="alert alert-info">
+                    <h6 class="alert-heading"><i class="bi bi-info-circle"></i> Estado Actual</h6>
+                    <p class="mb-0">
+                        La orden está actualmente en estado: 
+                        @{
+                            var badgeClass = Model.Estado switch
+                            {
+                                "Pendiente" => "bg-warning text-dark",
+                                "Pagado" => "bg-info",
+                                "Enviado" => "bg-primary",
+                                "Entregado" => "bg-success",
+                                "Cancelado" => "bg-danger",
+                                _ => "bg-secondary"
+                            };
+                        }
+                        <span class="badge @badgeClass fs-6">@Model.Estado</span>
+                    </p>
+                </div>
+
+                <!-- Resumen de la orden -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p><strong>Cliente:</strong> @Model.Cliente.NombreCompleto</p>
+                        <p><strong>Email:</strong> @Model.Cliente.Email</p>
+                        <p><strong>Fecha de Orden:</strong> @Model.FechaOrden.ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Total:</strong> <span class="fs-4 text-success">@Model.Total.ToString("C")</span></p>
+                        <p><strong>Productos:</strong> @Model.Detalles.Sum(d => d.Cantidad) unidades</p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Formulario de cambio de estado -->
+                <form asp-action="ActualizarEstado" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+
+                    <div class="mb-4">
+                        <label class="form-label"><strong>Seleccione el nuevo estado:</strong></label>
+                        
+                        @if (Model.Estado == "Pendiente")
+                        {
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="nuevoEstado" value="Pagado" id="estadoPagado" required>
+                                <label class="form-check-label" for="estadoPagado">
+                                    <span class="badge bg-info me-2">Pagado</span>
+                                    Confirmar pago recibido
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="nuevoEstado" value="Cancelado" id="estadoCancelado">
+                                <label class="form-check-label" for="estadoCancelado">
+                                    <span class="badge bg-danger me-2">Cancelado</span>
+                                    Cancelar orden (restaurará inventario)
+                                </label>
+                            </div>
+                        }
+                        else if (Model.Estado == "Pagado")
+                        {
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="nuevoEstado" value="Enviado" id="estadoEnviado" required>
+                                <label class="form-check-label" for="estadoEnviado">
+                                    <span class="badge bg-primary me-2">Enviado</span>
+                                    Marcar como enviado
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="nuevoEstado" value="Cancelado" id="estadoCancelado">
+                                <label class="form-check-label" for="estadoCancelado">
+                                    <span class="badge bg-danger me-2">Cancelado</span>
+                                    Cancelar orden (restaurará inventario)
+                                </label>
+                            </div>
+                        }
+                        else if (Model.Estado == "Enviado")
+                        {
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="nuevoEstado" value="Entregado" id="estadoEntregado" required>
+                                <label class="form-check-label" for="estadoEntregado">
+                                    <span class="badge bg-success me-2">Entregado</span>
+                                    Confirmar entrega al cliente
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="nuevoEstado" value="Cancelado" id="estadoCancelado">
+                                <label class="form-check-label" for="estadoCancelado">
+                                    <span class="badge bg-danger me-2">Cancelado</span>
+                                    Cancelar orden (restaurará inventario)
+                                </label>
+                            </div>
+                        }
+                        else if (Model.Estado == "Entregado")
+                        {
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle"></i> Esta orden ya ha sido entregada. No se pueden realizar más cambios de estado.
+                            </div>
+                        }
+                        else if (Model.Estado == "Cancelado")
+                        {
+                            <div class="alert alert-danger">
+                                <i class="bi bi-x-circle"></i> Esta orden ha sido cancelada. No se pueden realizar más cambios de estado.
+                            </div>
+                        }
+                    </div>
+
+                    @if (Model.Estado != "Entregado" && Model.Estado != "Cancelado")
+                    {
+                        <div class="alert alert-warning">
+                            <h6 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Información Importante</h6>
+                            <ul class="mb-0 small">
+                                <li>El cambio de estado quedará registrado en el historial de la orden</li>
+                                <li>Si marca como <strong>Cancelado</strong>, el inventario de los productos será restaurado automáticamente</li>
+                                <li>Los cambios de estado son irreversibles para estados finales (Entregado/Cancelado)</li>
+                                @if (Model.Estado == "Pagado")
+                                {
+                                    <li>Al marcar como <strong>Enviado</strong>, se registrará la fecha de envío</li>
+                                }
+                                @if (Model.Estado == "Enviado")
+                                {
+                                    <li>Al marcar como <strong>Entregado</strong>, se registrará la fecha de entrega</li>
+                                }
+                            </ul>
+                        </div>
+
+                        <hr>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Confirmar Cambio de Estado
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-grid">
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Volver a Detalles
+                            </a>
+                        </div>
+                    }
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel lateral con información -->
+    <div class="col-md-4">
+        <!-- Estados posibles -->
+        <div class="card bg-light mb-3">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-diagram-3"></i> Flujo de Estados</h6>
+                <div class="small">
+                    <div class="mb-2">
+                        <span class="badge bg-warning text-dark">Pendiente</span>
+                        <i class="bi bi-arrow-right mx-1"></i>
+                        <span class="badge bg-info">Pagado</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-info">Pagado</span>
+                        <i class="bi bi-arrow-right mx-1"></i>
+                        <span class="badge bg-primary">Enviado</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-primary">Enviado</span>
+                        <i class="bi bi-arrow-right mx-1"></i>
+                        <span class="badge bg-success">Entregado</span>
+                    </div>
+                    <hr>
+                    <div>
+                        <span class="text-muted">Desde cualquier estado:</span>
+                        <br>
+                        <i class="bi bi-arrow-right mx-1"></i>
+                        <span class="badge bg-danger">Cancelado</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historial de fechas -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0"><i class="bi bi-clock-history"></i> Historial</h6>
+            </div>
+            <div class="card-body">
+                <div class="small">
+                    <p class="mb-2">
+                        <i class="bi bi-circle-fill text-primary"></i>
+                        <strong>Creada:</strong>
+                        <br>
+                        <span class="ms-3">@Model.FechaOrden.ToString("dd/MM/yyyy HH:mm")</span>
+                    </p>
+
+                    @if (Model.FechaPago.HasValue)
+                    {
+                        <p class="mb-2">
+                            <i class="bi bi-circle-fill text-info"></i>
+                            <strong>Pagada:</strong>
+                            <br>
+                            <span class="ms-3">@Model.FechaPago.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                        </p>
+                    }
+
+                    @if (Model.FechaEnvio.HasValue)
+                    {
+                        <p class="mb-2">
+                            <i class="bi bi-circle-fill text-primary"></i>
+                            <strong>Enviada:</strong>
+                            <br>
+                            <span class="ms-3">@Model.FechaEnvio.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                        </p>
+                    }
+
+                    @if (Model.FechaEntrega.HasValue)
+                    {
+                        <p class="mb-0">
+                            <i class="bi bi-circle-fill text-success"></i>
+                            <strong>Entregada:</strong>
+                            <br>
+                            <span class="ms-3">@Model.FechaEntrega.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                        </p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

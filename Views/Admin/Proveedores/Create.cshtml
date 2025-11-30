@@ -1,0 +1,136 @@
+﻿@model EcommerceSystem.Models.Entities.Proveedor
+@{
+    ViewData["Title"] = "Nuevo Proveedor";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-plus-circle"></i> Crear Nuevo Proveedor</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al Listado
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <!-- Información básica -->
+                    <h5 class="mb-3"><i class="bi bi-building"></i> Información del Proveedor</h5>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label asp-for="Nombre" class="form-label">Nombre del Proveedor *</label>
+                            <input asp-for="Nombre" class="form-control" placeholder="Nombre o razón social">
+                            <span asp-validation-for="Nombre" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Información de contacto -->
+                    <h5 class="mb-3"><i class="bi bi-person-lines-fill"></i> Información de Contacto</h5>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Contacto" class="form-label">Persona de Contacto</label>
+                            <input asp-for="Contacto" class="form-control" placeholder="Nombre del contacto">
+                            <span asp-validation-for="Contacto" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Telefono" class="form-label">Teléfono</label>
+                            <input asp-for="Telefono" class="form-control" placeholder="Número de teléfono">
+                            <span asp-validation-for="Telefono" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label asp-for="Email" class="form-label">Email</label>
+                            <input asp-for="Email" class="form-control" type="email" placeholder="correo@ejemplo.com">
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label asp-for="Direccion" class="form-label">Dirección</label>
+                            <textarea asp-for="Direccion" class="form-control" rows="2" 
+                                      placeholder="Dirección física del proveedor"></textarea>
+                            <span asp-validation-for="Direccion" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Estado -->
+                    <h5 class="mb-3"><i class="bi bi-toggle-on"></i> Estado</h5>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="form-check form-switch">
+                                <input asp-for="Activo" class="form-check-input" type="checkbox" checked>
+                                <label asp-for="Activo" class="form-check-label">Proveedor Activo</label>
+                            </div>
+                            <small class="text-muted">Los proveedores inactivos no aparecerán en los formularios de productos</small>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Botones -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Guardar Proveedor
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel lateral de ayuda -->
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-lightbulb"></i> Información</h5>
+                <p class="small">Complete la información del proveedor para mantener actualizada su base de datos de suministradores.</p>
+                
+                <h6 class="mt-3">Campos importantes:</h6>
+                <ul class="small">
+                    <li><strong>Nombre:</strong> Razón social o nombre comercial del proveedor</li>
+                    <li><strong>Contacto:</strong> Persona encargada de atender pedidos</li>
+                    <li><strong>Teléfono y Email:</strong> Para comunicación directa</li>
+                    <li><strong>Dirección:</strong> Ubicación física del proveedor</li>
+                </ul>
+
+                <div class="alert alert-info mt-3">
+                    <small><i class="bi bi-info-circle"></i> Los campos marcados con * son obligatorios</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="card bg-success text-white mt-3">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-check-circle"></i> Buenas Prácticas</h6>
+                <ul class="small mb-0">
+                    <li>Verifique los datos antes de guardar</li>
+                    <li>Mantenga actualizados los contactos</li>
+                    <li>Use emails corporativos cuando sea posible</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,229 @@
+﻿@model List<EcommerceSystem.Models.Entities.Producto>
+@{
+    ViewData["Title"] = "Reporte de Ventas";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-graph-up"></i> Reporte de Ventas</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="@Url.Action("ExportarVentasCSV", new { fechaInicio = ViewData["FechaInicio"], fechaFin = ViewData["FechaFin"] })" 
+           class="btn btn-success">
+            <i class="bi bi-file-earmark-excel"></i> Exportar a CSV
+        </a>
+    </div>
+</div>
+
+<!-- Filtros de fecha -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form asp-action="Ventas" method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Fecha Inicio</label>
+                <input type="date" name="fechaInicio" value="@ViewData["FechaInicio"]" 
+                       class="form-control" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Fecha Fin</label>
+                <input type="date" name="fechaFin" value="@ViewData["FechaFin"]" 
+                       class="form-control" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Período</label>
+                <select name="periodo" class="form-select">
+                    @{
+                        var periodoActual = ViewData["Periodo"]?.ToString();
+                    }
+                    <option value="dia" selected="@(periodoActual == "dia")">Hoy</option>
+                    <option value="semana" selected="@(periodoActual == "semana")">Última Semana</option>
+                    <option value="mes" selected="@(periodoActual == "mes")">Último Mes</option>
+                    <option value="anio" selected="@(periodoActual == "anio")">Último Año</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-primary d-block w-100">
+                    <i class="bi bi-search"></i> Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tarjetas de resumen -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-cash-stack"></i> Total Ventas</h5>
+                <p class="card-text display-6">@ViewBag.TotalVentas.ToString("C")</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-cart-check"></i> Total Órdenes</h5>
+                <p class="card-text display-6">@ViewBag.TotalOrdenes</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-calculator"></i> Promedio por Orden</h5>
+                <p class="card-text display-6">@ViewBag.PromedioVenta.ToString("C")</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ventas por día -->
+@if (ViewBag.VentasPorDia != null && ((IEnumerable<dynamic>)ViewBag.VentasPorDia).Any())
+{
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5><i class="bi bi-calendar3"></i> Ventas por Día</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Total Ventas</th>
+                                    <th>Número de Órdenes</th>
+                                    <th>Promedio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var venta in ViewBag.VentasPorDia)
+                                {
+                                    var promedio = venta.Cantidad > 0 ? venta.Total / venta.Cantidad : 0;
+                                    <tr>
+                                        <td><strong>@venta.Fecha</strong></td>
+                                        <td><span class="text-success fw-bold">@venta.Total.ToString("C")</span></td>
+                                        <td><span class="badge bg-info">@venta.Cantidad</span></td>
+                                        <td>@promedio.ToString("C")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Productos más vendidos -->
+@if (ViewBag.ProductosMasVendidos != null && ((IEnumerable<dynamic>)ViewBag.ProductosMasVendidos).Any())
+{
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5><i class="bi bi-trophy-fill"></i> Top 10 Productos Más Vendidos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int rank = 1;
+                                }
+                                @foreach (var producto in ViewBag.ProductosMasVendidos)
+                                {
+                                    <tr>
+                                        <td>
+                                            @if (rank == 1)
+                                            {
+                                                <span class="badge bg-warning text-dark">🥇 @rank</span>
+                                            }
+                                            else if (rank == 2)
+                                            {
+                                                <span class="badge bg-secondary">🥈 @rank</span>
+                                            }
+                                            else if (rank == 3)
+                                            {
+                                                <span class="badge bg-danger">🥉 @rank</span>
+                                            }
+                                            else
+                                            {
+                                                <span>@rank</span>
+                                            }
+                                        </td>
+                                        <td>@producto.Producto</td>
+                                        <td><span class="badge bg-primary">@producto.Cantidad</span></td>
+                                        <td><strong>@producto.Total.ToString("C")</strong></td>
+                                    </tr>
+                                    rank++;
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ventas por categoría -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5><i class="bi bi-tags-fill"></i> Ventas por Categoría</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.VentasPorCategoria != null && ((IEnumerable<dynamic>)ViewBag.VentasPorCategoria).Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Categoría</th>
+                                        <th>Cantidad</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var categoria in ViewBag.VentasPorCategoria)
+                                    {
+                                        <tr>
+                                            <td><strong>@categoria.Categoria</strong></td>
+                                            <td><span class="badge bg-info">@categoria.Cantidad</span></td>
+                                            <td><strong>@categoria.Total.ToString("C")</strong></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> No hay datos de categorías disponibles
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (ViewBag.TotalOrdenes == 0)
+{
+    <div class="alert alert-info text-center">
+        <i class="bi bi-info-circle fs-1 d-block mb-2"></i>
+        <h5>No hay ventas en el período seleccionado</h5>
+        <p class="mb-0">Intente seleccionar un rango de fechas diferente</p>
+    </div>
+}

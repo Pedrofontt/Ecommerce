@@ -1,0 +1,203 @@
+﻿@model List<EcommerceSystem.Models.Entities.Proveedor>
+@{
+    ViewData["Title"] = "Proveedores";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-truck"></i> Gestión de Proveedores</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nuevo Proveedor
+        </a>
+    </div>
+</div>
+
+<!-- Estadísticas rápidas -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-building"></i> Total Proveedores</h5>
+                <p class="card-text display-6">@Model.Count</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-check-circle"></i> Proveedores Activos</h5>
+                <p class="card-text display-6">@Model.Count(p => p.Activo)</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-box-seam"></i> Productos Suministrados</h5>
+                <p class="card-text display-6">@Model.Sum(p => p.Productos?.Count ?? 0)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de proveedores -->
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5><i class="bi bi-list-ul"></i> Listado de Proveedores</h5>
+    </div>
+    <div class="card-body">
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Contacto</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                            <th>Dirección</th>
+                            <th>Productos</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@item.Nombre</strong>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.Contacto))
+                                    {
+                                        <span>@item.Contacto</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.Telefono))
+                                    {
+                                        <span><i class="bi bi-telephone"></i> @item.Telefono</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.Email))
+                                    {
+                                        <a href="mailto:@item.Email">
+                                            <i class="bi bi-envelope"></i> @item.Email
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.Direccion))
+                                    {
+                                        <small class="text-muted">@item.Direccion</small>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        var cantidadProductos = item.Productos?.Count ?? 0;
+                                    }
+                                    @if (cantidadProductos > 0)
+                                    {
+                                        <span class="badge bg-info">@cantidadProductos</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">0</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.Activo)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i> Activo
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-x-circle"></i> Inactivo
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a asp-action="Details" asp-route-id="@item.Id" 
+                                           class="btn btn-info" title="Ver detalles">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.Id" 
+                                           class="btn btn-warning" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" 
+                                           class="btn btn-danger" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="text-center text-muted mt-3">
+                <small>Mostrando @Model.Count proveedor(es)</small>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle fs-1 d-block mb-3"></i>
+                <h5>No hay proveedores registrados</h5>
+                <p>Comience agregando su primer proveedor para gestionar su cadena de suministro.</p>
+                <a asp-action="Create" class="btn btn-primary mt-2">
+                    <i class="bi bi-plus-circle"></i> Crear Primer Proveedor
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Información adicional -->
+<div class="card mt-4 bg-light">
+    <div class="card-body">
+        <h6 class="card-title"><i class="bi bi-lightbulb"></i> Consejos para la Gestión de Proveedores</h6>
+        <div class="row">
+            <div class="col-md-6">
+                <ul class="small">
+                    <li>Mantenga actualizada la información de contacto de cada proveedor</li>
+                    <li>Registre múltiples contactos para asegurar la comunicación</li>
+                    <li>Incluya el sitio web para consultar catálogos y precios</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <ul class="small">
+                    <li>Desactive proveedores inactivos en lugar de eliminarlos</li>
+                    <li>Revise periódicamente el desempeño de cada proveedor</li>
+                    <li>Diversifique proveedores para reducir riesgos</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

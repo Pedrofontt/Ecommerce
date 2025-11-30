@@ -1,0 +1,126 @@
+﻿@{
+    ViewData["Title"] = "Generar Alertas de Stock";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-bell-fill"></i> Generar Alertas de Stock</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver a Alertas
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Generar Alertas Automáticas</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6 class="alert-heading"><i class="bi bi-info-circle"></i> ¿Qué hace esta función?</h6>
+                    <p class="mb-0">
+                        Esta función escaneará todos los productos activos en el inventario y creará 
+                        alertas automáticas para aquellos que cumplan con las siguientes condiciones:
+                    </p>
+                </div>
+
+                <div class="mb-4">
+                    <h6>Criterios de Alerta:</h6>
+                    <ul>
+                        <li>
+                            <span class="badge bg-danger me-2">Crítico</span>
+                            Productos sin stock (Stock = 0) o con stock ≤ 25% del mínimo
+                        </li>
+                        <li>
+                            <span class="badge bg-warning text-dark me-2">Stock Bajo</span>
+                            Productos con stock entre 26% y 100% del mínimo
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="alert alert-warning">
+                    <h6 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Importante</h6>
+                    <ul class="mb-0">
+                        <li>Solo se crearán alertas para productos <strong>activos</strong></li>
+                        <li>No se crearán alertas duplicadas si ya existe una alerta <strong>pendiente</strong> para un producto</li>
+                        <li>Las alertas existentes <strong>no se modificarán</strong></li>
+                    </ul>
+                </div>
+
+                <hr>
+
+                <form asp-action="GenerarAlertasManualPost" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-warning btn-lg">
+                            <i class="bi bi-lightning-fill"></i> Generar Alertas Ahora
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel lateral con información -->
+    <div class="col-md-4">
+        <!-- Información del proceso -->
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-info-circle"></i> Proceso de Generación</h6>
+                <div class="small">
+                    <p><strong>Paso 1:</strong> Buscar productos activos con stock bajo o crítico</p>
+                    <p><strong>Paso 2:</strong> Verificar alertas pendientes existentes</p>
+                    <p><strong>Paso 3:</strong> Crear nuevas alertas según criterios</p>
+                    <p class="mb-0"><strong>Paso 4:</strong> Mostrar resumen de alertas creadas</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Niveles de criticidad -->
+        <div class="card mt-3">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0"><i class="bi bi-bar-chart"></i> Niveles de Criticidad</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-danger">Crítico</span>
+                        <small class="text-muted">Stock = 0 o ≤ 25% mínimo</small>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar bg-danger" style="width: 25%"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-warning text-dark">Stock Bajo</span>
+                        <small class="text-muted">Stock &gt; 25% y ≤ 100% mínimo</small>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar bg-warning" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recomendaciones -->
+        <div class="card mt-3 bg-success text-white">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-lightbulb"></i> Recomendaciones</h6>
+                <ul class="small mb-0">
+                    <li>Ejecute esta función al inicio del día</li>
+                    <li>Revise las alertas generadas regularmente</li>
+                    <li>Configure stocks mínimos adecuados en cada producto</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

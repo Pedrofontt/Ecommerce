@@ -8,7 +8,7 @@ using EcommerceSystem.Services.Interfaces;
 namespace EcommerceSystem.Controllers.Admin
 {
     [Authorize(Roles = "Admin")]
-    [Area("Admin")]
+    // ❌ ELIMINADO: [Area("Admin")] - Para que funcione como DashboardController
     public class CategoriasController : Controller
     {
         private readonly ICategoriaService _categoriaService;
@@ -22,7 +22,7 @@ namespace EcommerceSystem.Controllers.Admin
             _context = context;
         }
 
-        // GET: Admin/Categorias
+        // GET: Categorias (ruta: /Categorias)
         public async Task<IActionResult> Index()
         {
             var categorias = await _context.Categorias
@@ -32,10 +32,11 @@ namespace EcommerceSystem.Controllers.Admin
                 .OrderBy(c => c.Orden)
                 .ToListAsync();
 
-            return View(categorias);
+            // ✅ Especificar ruta completa de vista
+            return View("~/Views/Admin/Categorias/Index.cshtml", categorias);
         }
 
-        // GET: Admin/Categorias/Details/5
+        // GET: Categorias/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -45,10 +46,10 @@ namespace EcommerceSystem.Controllers.Admin
             if (categoria == null)
                 return NotFound();
 
-            return View(categoria);
+            return View("~/Views/Admin/Categorias/Details.cshtml", categoria);
         }
 
-        // GET: Admin/Categorias/Create
+        // GET: Categorias/Create
         public IActionResult Create()
         {
             ViewBag.Categorias = _context.Categorias
@@ -56,10 +57,10 @@ namespace EcommerceSystem.Controllers.Admin
                 .OrderBy(c => c.Nombre)
                 .ToList();
 
-            return View();
+            return View("~/Views/Admin/Categorias/Create.cshtml");
         }
 
-        // POST: Admin/Categorias/Create
+        // POST: Categorias/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Categoria categoria)
@@ -70,11 +71,10 @@ namespace EcommerceSystem.Controllers.Admin
                     .Where(c => c.Activo && c.ParentId == null)
                     .OrderBy(c => c.Nombre)
                     .ToList();
-                return View(categoria);
+                return View("~/Views/Admin/Categorias/Create.cshtml", categoria);
             }
 
             var resultado = await _categoriaService.CrearAsync(categoria);
-
             if (resultado)
             {
                 TempData["Success"] = "Categoría creada exitosamente";
@@ -82,10 +82,10 @@ namespace EcommerceSystem.Controllers.Admin
             }
 
             TempData["Error"] = "Error al crear la categoría";
-            return View(categoria);
+            return View("~/Views/Admin/Categorias/Create.cshtml", categoria);
         }
 
-        // GET: Admin/Categorias/Edit/5
+        // GET: Categorias/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -100,10 +100,10 @@ namespace EcommerceSystem.Controllers.Admin
                 .OrderBy(c => c.Nombre)
                 .ToList();
 
-            return View(categoria);
+            return View("~/Views/Admin/Categorias/Edit.cshtml", categoria);
         }
 
-        // POST: Admin/Categorias/Edit/5
+        // POST: Categorias/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Categoria categoria)
@@ -117,11 +117,10 @@ namespace EcommerceSystem.Controllers.Admin
                     .Where(c => c.Activo && c.ParentId == null && c.Id != id)
                     .OrderBy(c => c.Nombre)
                     .ToList();
-                return View(categoria);
+                return View("~/Views/Admin/Categorias/Edit.cshtml", categoria);
             }
 
             var resultado = await _categoriaService.ActualizarAsync(categoria);
-
             if (resultado)
             {
                 TempData["Success"] = "Categoría actualizada exitosamente";
@@ -129,10 +128,10 @@ namespace EcommerceSystem.Controllers.Admin
             }
 
             TempData["Error"] = "Error al actualizar la categoría";
-            return View(categoria);
+            return View("~/Views/Admin/Categorias/Edit.cshtml", categoria);
         }
 
-        // GET: Admin/Categorias/Delete/5
+        // GET: Categorias/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -142,16 +141,15 @@ namespace EcommerceSystem.Controllers.Admin
             if (categoria == null)
                 return NotFound();
 
-            return View(categoria);
+            return View("~/Views/Admin/Categorias/Delete.cshtml", categoria);
         }
 
-        // POST: Admin/Categorias/Delete/5
+        // POST: Categorias/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var resultado = await _categoriaService.EliminarAsync(id);
-
             if (resultado)
             {
                 TempData["Success"] = "Categoría eliminada exitosamente";

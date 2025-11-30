@@ -1,0 +1,223 @@
+﻿@model EcommerceSystem.Models.Entities.Marca
+@{
+    ViewData["Title"] = "Eliminar Marca";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-trash"></i> Eliminar Marca</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al Listado
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="alert alert-danger">
+            <h4 class="alert-heading"><i class="bi bi-exclamation-triangle-fill"></i> ¿Está seguro que desea eliminar esta marca?</h4>
+            <p>Esta acción marcará la marca como inactiva. Los productos asociados seguirán existiendo pero no podrá seleccionar esta marca para nuevos productos.</p>
+            <hr>
+            <p class="mb-0"><strong>Nota:</strong> Esta es una eliminación lógica. La marca no se eliminará físicamente de la base de datos.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">Información de la Marca a Eliminar</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Nombre:</dt>
+                    <dd class="col-sm-9"><strong>@Model.Nombre</strong></dd>
+
+                    <dt class="col-sm-3">Descripción:</dt>
+                    <dd class="col-sm-9">
+                        @if (!string.IsNullOrEmpty(Model.Descripcion))
+                        {
+                            <span>@Model.Descripcion</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sin descripción</span>
+                        }
+                    </dd>
+
+                    @if (!string.IsNullOrEmpty(Model.Logo))
+                    {
+                        <dt class="col-sm-3">Logo:</dt>
+                        <dd class="col-sm-9">
+                            <img src="@Model.Logo" alt="@Model.Nombre" 
+                                 style="max-width: 200px; max-height: 100px;" class="border rounded p-2">
+                        </dd>
+                    }
+
+                    <dt class="col-sm-3">Estado Actual:</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.Activo)
+                        {
+                            <span class="badge bg-success">Activa</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactiva</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Productos Asociados:</dt>
+                    <dd class="col-sm-9">
+                        <span class="badge bg-primary">@(Model.Productos?.Count ?? 0)</span>
+                    </dd>
+                </dl>
+
+                @if (Model.Productos != null && Model.Productos.Any())
+                {
+                    <hr>
+                    <h6 class="text-danger"><i class="bi bi-box-seam"></i> Productos que quedarán sin marca activa:</h6>
+                    <div class="list-group" style="max-height: 300px; overflow-y: auto;">
+                        @foreach (var producto in Model.Productos.Take(15))
+                        {
+                            <div class="list-group-item list-group-item-warning">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">@producto.Nombre</h6>
+                                        <small class="text-muted">
+                                            SKU: @producto.SKU - 
+                                            Stock: @producto.Stock - 
+                                            Precio: @producto.Precio.ToString("C")
+                                        </small>
+                                    </div>
+                                    <div>
+                                        @if (producto.Stock <= producto.StockMinimo)
+                                        {
+                                            <span class="badge bg-danger">Stock Bajo</span>
+                                        }
+                                        @if (producto.Destacado)
+                                        {
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-star-fill"></i> Destacado
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        @if (Model.Productos.Count > 15)
+                        {
+                            <div class="list-group-item text-center">
+                                <small class="text-muted">Y @(Model.Productos.Count - 15) producto(s) más...</small>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <hr class="my-4">
+
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="bi bi-trash"></i> Confirmar Eliminación
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel lateral con advertencias -->
+    <div class="col-md-4">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h6 class="mb-0"><i class="bi bi-exclamation-octagon"></i> Advertencias</h6>
+            </div>
+            <div class="card-body">
+                <ul class="small mb-0">
+                    <li class="mb-2">La marca será marcada como <strong>inactiva</strong></li>
+                    <li class="mb-2">No se eliminará físicamente de la base de datos</li>
+                    <li class="mb-2">Los productos asociados seguirán existiendo</li>
+                    <li class="mb-2">No podrá seleccionar esta marca para nuevos productos</li>
+                    <li class="mb-2">Puede reactivarla editando la marca posteriormente</li>
+                </ul>
+            </div>
+        </div>
+
+        @if (Model.Productos != null && Model.Productos.Any())
+        {
+            <div class="card border-warning mt-3">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Impacto</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small mb-2">Esta marca tiene <strong>@Model.Productos.Count producto(s)</strong> asociado(s).</p>
+                    <p class="small mb-2">
+                        Stock total de productos: 
+                        <span class="badge bg-info">
+                            @Model.Productos.Sum(p => p.Stock)
+                        </span>
+                    </p>
+                    <p class="small mb-2">
+                        Valor total del inventario: 
+                        <strong>@Model.Productos.Sum(p => p.Stock * p.Precio).ToString("C")</strong>
+                    </p>
+                    <p class="small mb-2">
+                        Productos con stock bajo: 
+                        <span class="badge bg-warning text-dark">
+                            @Model.Productos.Count(p => p.Stock <= p.StockMinimo)
+                        </span>
+                    </p>
+                    <p class="small mb-0">
+                        Productos sin stock: 
+                        <span class="badge bg-danger">
+                            @Model.Productos.Count(p => p.Stock == 0)
+                        </span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Categorías afectadas -->
+            @if (Model.Productos != null && Model.Productos.Any())
+            {
+                var categorias = Model.Productos
+                    .Where(p => p.Categoria != null)
+                    .Select(p => p.Categoria.Nombre)
+                    .Distinct()
+                    .ToList();
+                
+                if (categorias.Any())
+                {
+                    <div class="card mt-3 bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title"><i class="bi bi-tags"></i> Categorías Afectadas</h6>
+                            <p class="small mb-2">Los productos de esta marca pertenecen a las siguientes categorías:</p>
+                            <div>
+                                @foreach (var cat in categorias.Take(5))
+                                {
+                                    <span class="badge bg-secondary mb-1">@cat</span>
+                                }
+                                @if (categorias.Count > 5)
+                                {
+                                    <span class="badge bg-info mb-1">+@(categorias.Count - 5) más</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        }
+
+        <div class="card bg-light mt-3">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-lightbulb"></i> Recomendación</h6>
+                <p class="small mb-0">
+                    Si esta marca podría volver a ser utilizada en el futuro, 
+                    considere simplemente <strong>desactivarla</strong> en lugar de eliminarla.
+                    Puede hacerlo desde la página de edición.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

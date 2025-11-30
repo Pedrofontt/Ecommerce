@@ -7,7 +7,6 @@ using EcommerceSystem.Models.Entities;
 namespace EcommerceSystem.Controllers.Admin
 {
     [Authorize(Roles = "Admin")]
-    [Area("Admin")]
     public class ProveedoresController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -17,7 +16,7 @@ namespace EcommerceSystem.Controllers.Admin
             _context = context;
         }
 
-        // GET: Admin/Proveedores
+        // GET: Proveedores
         public async Task<IActionResult> Index()
         {
             var proveedores = await _context.Proveedores
@@ -25,46 +24,56 @@ namespace EcommerceSystem.Controllers.Admin
                 .OrderBy(p => p.Nombre)
                 .ToListAsync();
 
-            return View(proveedores);
+            return View("~/Views/Admin/Proveedores/Index.cshtml", proveedores);
         }
 
-        // GET: Admin/Proveedores/Details/5
+        // GET: Proveedores/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
                 return NotFound();
 
             var proveedor = await _context.Proveedores
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .Include(p => p.Productos)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
             if (proveedor == null)
                 return NotFound();
 
-            return View(proveedor);
+            return View("~/Views/Admin/Proveedores/Details.cshtml", proveedor);
         }
 
-        // GET: Admin/Proveedores/Create
+        // GET: Proveedores/Create
         public IActionResult Create()
         {
-            return View();
+            return View("~/Views/Admin/Proveedores/Create.cshtml");
         }
 
-        // POST: Admin/Proveedores/Create
+        // POST: Proveedores/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Proveedor proveedor)
         {
             if (!ModelState.IsValid)
-                return View(proveedor);
+            {
+                return View("~/Views/Admin/Proveedores/Create.cshtml", proveedor);
+            }
 
-            _context.Add(proveedor);
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = "Proveedor creado exitosamente";
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                _context.Add(proveedor);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Proveedor creado exitosamente";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "Error al crear el proveedor";
+                return View("~/Views/Admin/Proveedores/Create.cshtml", proveedor);
+            }
         }
 
-        // GET: Admin/Proveedores/Edit/5
+        // GET: Proveedores/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -74,10 +83,10 @@ namespace EcommerceSystem.Controllers.Admin
             if (proveedor == null)
                 return NotFound();
 
-            return View(proveedor);
+            return View("~/Views/Admin/Proveedores/Edit.cshtml", proveedor);
         }
 
-        // POST: Admin/Proveedores/Edit/5
+        // POST: Proveedores/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Proveedor proveedor)
@@ -86,50 +95,71 @@ namespace EcommerceSystem.Controllers.Admin
                 return NotFound();
 
             if (!ModelState.IsValid)
-                return View(proveedor);
+            {
+                return View("~/Views/Admin/Proveedores/Edit.cshtml", proveedor);
+            }
 
             try
             {
                 _context.Update(proveedor);
                 await _context.SaveChangesAsync();
                 TempData["Success"] = "Proveedor actualizado exitosamente";
+                return RedirectToAction(nameof(Index));
             }
             catch (DbUpdateConcurrencyException)
             {
                 if (!ProveedorExists(proveedor.Id))
                     return NotFound();
-                throw;
+                else
+                    throw;
             }
-
-            return RedirectToAction(nameof(Index));
+            catch (Exception)
+            {
+                TempData["Error"] = "Error al actualizar el proveedor";
+                return View("~/Views/Admin/Proveedores/Edit.cshtml", proveedor);
+            }
         }
 
-        // GET: Admin/Proveedores/Delete/5
+        // GET: Proveedores/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
                 return NotFound();
 
             var proveedor = await _context.Proveedores
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .Include(p => p.Productos)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
             if (proveedor == null)
                 return NotFound();
 
-            return View(proveedor);
+            return View("~/Views/Admin/Proveedores/Delete.cshtml", proveedor);
         }
 
-        // POST: Admin/Proveedores/Delete/5
+        // POST: Proveedores/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var proveedor = await _context.Proveedores.FindAsync(id);
-            if (proveedor != null)
+            try
             {
+                var proveedor = await _context.Proveedores.FindAsync(id);
+                if (proveedor == null)
+                {
+                    TempData["Error"] = "Proveedor no encontrado";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Soft delete
                 proveedor.Activo = false;
+                _context.Update(proveedor);
                 await _context.SaveChangesAsync();
+
                 TempData["Success"] = "Proveedor eliminado exitosamente";
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "Error al eliminar el proveedor. Puede tener productos asociados.";
             }
 
             return RedirectToAction(nameof(Index));

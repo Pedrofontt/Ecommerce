@@ -11,10 +11,7 @@
 <div class="card shadow-sm mb-4">
     <div class="card-body">
         <form asp-action="Index" method="get" class="row g-3">
-            <div class="col-md-3">
-                <label class="form-label">Estado</label>
-                <select name="estado" class="form-select" asp-items="ViewBag.Estados"></select>
-            </div>
+
             <div class="col-md-3">
                 <label class="form-label">Fecha Inicio</label>
                 <input type="date" name="fechaInicio" class="form-control" value="@ViewData["FechaInicio"]" />

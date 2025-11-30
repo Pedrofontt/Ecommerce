@@ -1,0 +1,291 @@
+﻿@model List<EcommerceSystem.Models.Entities.Producto>
+@{
+    ViewData["Title"] = "Reporte de Stock Bajo";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-exclamation-triangle"></i> Reporte de Stock Bajo</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a asp-controller="Alertas" asp-action="GenerarAlertasManual" 
+           class="btn btn-warning me-2"
+           onclick="return confirm('¿Generar alertas para todos los productos con stock bajo?')">
+            <i class="bi bi-bell"></i> Generar Alertas
+        </a>
+        <a asp-action="ExportarInventarioCSV" class="btn btn-success">
+            <i class="bi bi-file-earmark-excel"></i> Exportar
+        </a>
+    </div>
+</div>
+
+<!-- Estadísticas de criticidad -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-x-circle-fill"></i> Críticos</h5>
+                <p class="card-text display-6">@ViewBag.TotalCriticos</p>
+                <small>Sin stock o stock = 0</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-exclamation-circle-fill"></i> Alerta</h5>
+                <p class="card-text display-6">@ViewBag.TotalAlerta</p>
+                <small>Stock ≤ 50% del mínimo</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-info-circle-fill"></i> Atención</h5>
+                <p class="card-text display-6">@ViewBag.TotalAtencion</p>
+                <small>Stock entre 50% y 100% del mínimo</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-secondary">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-currency-dollar"></i> Valor en Riesgo</h5>
+                <p class="card-text display-6">@ViewBag.ValorInventarioRiesgo.ToString("C")</p>
+                <small>Valor total del inventario bajo</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model != null && Model.Any())
+{
+    <!-- Productos CRÍTICOS -->
+    @if (ViewBag.ProductosCriticos != null && ViewBag.ProductosCriticos.Count > 0)
+    {
+        <div class="card mb-4 border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5><i class="bi bi-x-circle-fill"></i> Productos CRÍTICOS - Sin Stock (@ViewBag.TotalCriticos)</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <strong>ATENCIÓN:</strong> Estos productos no tienen stock disponible y requieren reabastecimiento inmediato.
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>SKU</th>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th>Proveedor</th>
+                                <th class="text-center">Stock Actual</th>
+                                <th class="text-center">Stock Mínimo</th>
+                                <th class="text-end">Precio</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in ViewBag.ProductosCriticos)
+                            {
+                                <tr class="table-danger">
+                                    <td><code>@item.SKU</code></td>
+                                    <td><strong>@item.Nombre</strong></td>
+                                    <td>@(item.Categoria?.Nombre ?? "N/A")</td>
+                                    <td>
+                                        @if (item.Proveedor != null)
+                                        {
+                                            <span>@item.Proveedor.Nombre</span>
+                                            @if (!string.IsNullOrEmpty(item.Proveedor.Telefono))
+                                            {
+                                                <br><small class="text-muted">📞 @item.Proveedor.Telefono</small>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">N/A</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-danger fs-6">@item.Stock</span>
+                                    </td>
+                                    <td class="text-center">@item.StockMinimo</td>
+                                    <td class="text-end">@item.Precio.ToString("C")</td>
+                                    <td>
+                                        <a asp-controller="Productos" asp-action="Edit" asp-route-id="@item.Id" 
+                                           class="btn btn-sm btn-warning">
+                                            <i class="bi bi-plus-circle"></i> Reabastecer
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Productos en ALERTA -->
+    @if (ViewBag.ProductosAlerta != null && ViewBag.ProductosAlerta.Count > 0)
+    {
+        <div class="card mb-4 border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5><i class="bi bi-exclamation-circle-fill"></i> Productos en ALERTA - Stock Muy Bajo (@ViewBag.TotalAlerta)</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-circle"></i>
+                    Estos productos tienen stock crítico (≤ 50% del mínimo) y requieren atención urgente.
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>SKU</th>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th>Proveedor</th>
+                                <th class="text-center">Stock Actual</th>
+                                <th class="text-center">Stock Mínimo</th>
+                                <th class="text-center">% Stock</th>
+                                <th class="text-end">Precio</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in ViewBag.ProductosAlerta)
+                            {
+                                var porcentaje = item.StockMinimo > 0 ? ((decimal)item.Stock / item.StockMinimo * 100) : 0;
+                                <tr class="table-warning">
+                                    <td><code>@item.SKU</code></td>
+                                    <td><strong>@item.Nombre</strong></td>
+                                    <td>@(item.Categoria?.Nombre ?? "N/A")</td>
+                                    <td>
+                                        @if (item.Proveedor != null)
+                                        {
+                                            <span>@item.Proveedor.Nombre</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">N/A</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-warning text-dark fs-6">@item.Stock</span>
+                                    </td>
+                                    <td class="text-center">@item.StockMinimo</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-warning text-dark">@porcentaje.ToString("F0")%</span>
+                                    </td>
+                                    <td class="text-end">@item.Precio.ToString("C")</td>
+                                    <td>
+                                        <a asp-controller="Productos" asp-action="Edit" asp-route-id="@item.Id" 
+                                           class="btn btn-sm btn-warning">
+                                            <i class="bi bi-box-seam"></i> Actualizar
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Productos requieren ATENCIÓN -->
+    @if (ViewBag.ProductosAtencion != null && ViewBag.ProductosAtencion.Count > 0)
+    {
+        <div class="card mb-4 border-info">
+            <div class="card-header bg-info text-white">
+                <h5><i class="bi bi-info-circle-fill"></i> Productos que Requieren ATENCIÓN (@ViewBag.TotalAtencion)</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    Estos productos están cerca del stock mínimo (entre 50% y 100%) y deben ser monitoreados.
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>SKU</th>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th class="text-center">Stock Actual</th>
+                                <th class="text-center">Stock Mínimo</th>
+                                <th class="text-center">% Stock</th>
+                                <th class="text-center">Necesita</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in ViewBag.ProductosAtencion)
+                            {
+                                var porcentaje = item.StockMinimo > 0 ? ((decimal)item.Stock / item.StockMinimo * 100) : 0;
+                                var necesita = item.StockMinimo - item.Stock;
+                                <tr>
+                                    <td><code>@item.SKU</code></td>
+                                    <td>@item.Nombre</td>
+                                    <td>@(item.Categoria?.Nombre ?? "N/A")</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-info">@item.Stock</span>
+                                    </td>
+                                    <td class="text-center">@item.StockMinimo</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-info">@porcentaje.ToString("F0")%</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary">+@necesita</span>
+                                    </td>
+                                    <td>
+                                        <a asp-controller="Productos" asp-action="Edit" asp-route-id="@item.Id" 
+                                           class="btn btn-sm btn-info">
+                                            <i class="bi bi-pencil"></i> Editar
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="alert alert-success text-center">
+        <i class="bi bi-check-circle fs-1 d-block mb-3"></i>
+        <h4>¡Excelente!</h4>
+        <p class="mb-0">No hay productos con stock bajo en este momento. Todos los productos tienen stock suficiente.</p>
+    </div>
+}
+
+<!-- Leyenda y recomendaciones -->
+<div class="card bg-light">
+    <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-lightbulb"></i> Recomendaciones</h5>
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Niveles de Criticidad:</h6>
+                <ul class="small">
+                    <li><span class="badge bg-danger">Crítico</span> - Stock = 0: Reabastecimiento INMEDIATO</li>
+                    <li><span class="badge bg-warning text-dark">Alerta</span> - Stock ≤ 50% mínimo: Urgente</li>
+                    <li><span class="badge bg-info">Atención</span> - Stock entre 50-100% mínimo: Monitorear</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6>Acciones Sugeridas:</h6>
+                <ul class="small">
+                    <li>Contacte a los proveedores para productos críticos</li>
+                    <li>Revise los tiempos de entrega de cada proveedor</li>
+                    <li>Configure alertas automáticas desde el módulo de Alertas</li>
+                    <li>Considere ajustar los stocks mínimos según la demanda</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

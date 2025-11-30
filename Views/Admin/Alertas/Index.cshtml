@@ -2,11 +2,17 @@
 
 @{
     ViewData["Title"] = "Alertas de Stock";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="bi bi-bell"></i> Alertas de Stock</h2>
-    <span class="badge bg-danger fs-5">@Model.Count() Pendientes</span>
+    <div>
+        <span class="badge bg-danger fs-5 me-2">@Model.Count() Pendientes</span>
+        <a asp-action="GenerarAlertasManual" class="btn btn-warning">
+            <i class="bi bi-lightning-fill"></i> Generar Alertas
+        </a>
+    </div>
 </div>
 
 @if (Model.Any())
@@ -15,12 +21,12 @@
         @foreach (var alerta in Model)
         {
             <div class="col-md-6 mb-3">
-                <div class="card shadow-sm border-start border-5 @(alerta.Tipo == "StockAgotado" ? "border-danger" : alerta.Tipo == "StockCritico" ? "border-warning" : "border-info")">
+                <div class="card shadow-sm border-start border-5 @(alerta.Tipo == "Crítico" ? "border-danger" : "border-warning")">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <h5 class="card-title mb-1">
-                                    <a asp-area="Admin" asp-controller="Productos" asp-action="Details" asp-route-id="@alerta.ProductoId" 
+                                    <a asp-controller="Productos" asp-action="Details" asp-route-id="@alerta.ProductoId" 
                                        class="text-decoration-none text-dark">
                                         @alerta.Producto.Nombre
                                     </a>
@@ -29,17 +35,13 @@
                                     <small>SKU: @alerta.Producto.SKU</small>
                                 </p>
                             </div>
-                            @switch (alerta.Tipo)
+                            @if (alerta.Tipo == "Crítico")
                             {
-                                case "StockAgotado":
-                                    <span class="badge bg-danger">AGOTADO</span>
-                                    break;
-                                case "StockCritico":
-                                    <span class="badge bg-warning text-dark">CRÍTICO</span>
-                                    break;
-                                default:
-                                    <span class="badge bg-info">BAJO</span>
-                                    break;
+                                <span class="badge bg-danger">CRÍTICO</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">STOCK BAJO</span>
                             }
                         </div>
 
@@ -72,15 +74,15 @@
                             </small>
                             
                             <div class="btn-group btn-group-sm">
-                                <a asp-area="Admin" asp-controller="Productos" asp-action="Edit" asp-route-id="@alerta.ProductoId" 
+                                <a asp-controller="Productos" asp-action="Edit" asp-route-id="@alerta.ProductoId" 
                                    class="btn btn-outline-primary">
                                     <i class="bi bi-pencil"></i> Ajustar Stock
                                 </a>
-                                <form asp-action="MarcarRevisada" method="post" class="d-inline">
+                                <form asp-action="Resolver" method="post" class="d-inline">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@alerta.Id">
                                     <button type="submit" class="btn btn-outline-success">
-                                        <i class="bi bi-check"></i> Marcar Revisada
+                                        <i class="bi bi-check"></i> Resolver
                                     </button>
                                 </form>
                             </div>
@@ -100,9 +102,14 @@ else
                     <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
                     <h3 class="mt-3">¡Todo en Orden!</h3>
                     <p class="text-muted">No hay alertas de stock pendientes</p>
-                    <a asp-area="Admin" asp-controller="Productos" asp-action="Index" class="btn btn-primary">
-                        Ver Productos
-                    </a>
+                    <div class="btn-group">
+                        <a asp-controller="Productos" asp-action="Index" class="btn btn-primary">
+                            Ver Productos
+                        </a>
+                        <a asp-action="GenerarAlertasManual" class="btn btn-warning">
+                            Generar Alertas
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
