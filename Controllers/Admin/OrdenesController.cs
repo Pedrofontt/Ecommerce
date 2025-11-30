@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using EcommerceSystem.Data;
 using EcommerceSystem.Models.Entities;
@@ -9,7 +8,6 @@ using EcommerceSystem.Services.Interfaces;
 namespace EcommerceSystem.Controllers.Admin
 {
     [Authorize(Roles = "Admin,Vendedor")]
-    [Area("Admin")]
     public class OrdenesController : Controller
     {
         private readonly IOrdenService _ordenService;
@@ -23,100 +21,256 @@ namespace EcommerceSystem.Controllers.Admin
             _context = context;
         }
 
-        // GET: Admin/Ordenes
-        public async Task<IActionResult> Index(string estado, DateTime? fechaInicio, DateTime? fechaFin)
+        // GET: Ordenes
+        public async Task<IActionResult> Index(string estado, string busqueda, DateTime? fechaDesde, DateTime? fechaHasta)
         {
-            var ordenes = _context.Ordenes
+            ViewData["EstadoFiltro"] = estado;
+            ViewData["BusquedaFiltro"] = busqueda;
+            ViewData["FechaDesde"] = fechaDesde?.ToString("yyyy-MM-dd");
+            ViewData["FechaHasta"] = fechaHasta?.ToString("yyyy-MM-dd");
+
+            var ordenesQuery = _context.Ordenes
                 .Include(o => o.Cliente)
+                .Include(o => o.Detalles)
+                    .ThenInclude(d => d.Producto)
                 .AsQueryable();
 
-            // Filtros
-            if (!string.IsNullOrEmpty(estado))
+            // Filtro por estado
+            if (!string.IsNullOrEmpty(estado) && estado != "Todos")
             {
-                ordenes = ordenes.Where(o => o.Estado == estado);
-                ViewData["EstadoFiltro"] = estado;
+                ordenesQuery = ordenesQuery.Where(o => o.Estado == estado);
             }
 
-            if (fechaInicio.HasValue)
+            // Filtro por búsqueda (número de orden o cliente)
+            if (!string.IsNullOrEmpty(busqueda))
             {
-                ordenes = ordenes.Where(o => o.FechaOrden >= fechaInicio.Value);
-                ViewData["FechaInicio"] = fechaInicio.Value.ToString("yyyy-MM-dd");
+                ordenesQuery = ordenesQuery.Where(o =>
+                    o.NumeroOrden.Contains(busqueda) ||
+                    o.Cliente.NombreCompleto.Contains(busqueda) ||
+                    o.Cliente.Email.Contains(busqueda)
+                );
             }
 
-            if (fechaFin.HasValue)
+            // Filtro por rango de fechas
+            if (fechaDesde.HasValue)
             {
-                ordenes = ordenes.Where(o => o.FechaOrden <= fechaFin.Value);
-                ViewData["FechaFin"] = fechaFin.Value.ToString("yyyy-MM-dd");
+                ordenesQuery = ordenesQuery.Where(o => o.FechaOrden >= fechaDesde.Value);
             }
 
-            var resultado = await ordenes
+            if (fechaHasta.HasValue)
+            {
+                var fechaHastaFin = fechaHasta.Value.AddDays(1).AddTicks(-1);
+                ordenesQuery = ordenesQuery.Where(o => o.FechaOrden <= fechaHastaFin);
+            }
+
+            var ordenes = await ordenesQuery
                 .OrderByDescending(o => o.FechaOrden)
                 .ToListAsync();
 
-            // Estados para filtro
-            ViewBag.Estados = new List<SelectListItem>
-            {
-                new SelectListItem { Value = "", Text = "Todos" },
-                new SelectListItem { Value = "Pendiente", Text = "Pendiente" },
-                new SelectListItem { Value = "Confirmado", Text = "Confirmado" },
-                new SelectListItem { Value = "Enviado", Text = "Enviado" },
-                new SelectListItem { Value = "Entregado", Text = "Entregado" },
-                new SelectListItem { Value = "Cancelado", Text = "Cancelado" }
-            };
-
-            return View(resultado);
+            return View("~/Views/Admin/Ordenes/Index.cshtml", ordenes);
         }
 
-        // GET: Admin/Ordenes/Details/5
+        // GET: Ordenes/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
                 return NotFound();
 
-            var orden = await _ordenService.ObtenerPorIdAsync(id.Value);
+            var orden = await _context.Ordenes
+                .Include(o => o.Cliente)
+                .Include(o => o.Detalles)
+                    .ThenInclude(d => d.Producto)
+                .Include(o => o.Pagos)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
             if (orden == null)
                 return NotFound();
 
-            return View(orden);
+            return View("~/Views/Admin/Ordenes/Details.cshtml", orden);
         }
 
-        // POST: Admin/Ordenes/CambiarEstado
+        // GET: Ordenes/CambiarEstado/5
+        public async Task<IActionResult> CambiarEstado(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var orden = await _context.Ordenes
+                .Include(o => o.Cliente)
+                .Include(o => o.Detalles)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (orden == null)
+                return NotFound();
+
+            return View("~/Views/Admin/Ordenes/CambiarEstado.cshtml", orden);
+        }
+
+        // POST: Ordenes/ActualizarEstado/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CambiarEstado(int id, string nuevoEstado)
+        public async Task<IActionResult> ActualizarEstado(int id, string nuevoEstado)
         {
-            var resultado = await _ordenService.CambiarEstadoAsync(id, nuevoEstado);
+            try
+            {
+                var orden = await _context.Ordenes.FindAsync(id);
+                if (orden == null)
+                {
+                    TempData["Error"] = "Orden no encontrada";
+                    return RedirectToAction(nameof(Index));
+                }
 
-            if (resultado)
-            {
-                TempData["Success"] = $"Estado cambiado a {nuevoEstado} exitosamente";
+                // Validar transición de estado
+                if (!ValidarTransicionEstado(orden.Estado, nuevoEstado))
+                {
+                    TempData["Error"] = $"No se puede cambiar de estado {orden.Estado} a {nuevoEstado}";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+
+                orden.Estado = nuevoEstado;
+
+                // Actualizar fecha según el estado
+                switch (nuevoEstado)
+                {
+                    case "Pagado":
+                        orden.FechaPago = DateTime.Now;
+                        break;
+                    case "Enviado":
+                        orden.FechaEnvio = DateTime.Now;
+                        break;
+                    case "Entregado":
+                        orden.FechaEntrega = DateTime.Now;
+                        break;
+                    case "Cancelado":
+                        // Restaurar inventario si se cancela
+                        await RestaurarInventarioAsync(id);
+                        break;
+                }
+
+                _context.Update(orden);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = $"Estado actualizado a '{nuevoEstado}' exitosamente";
             }
-            else
+            catch (Exception ex)
             {
-                TempData["Error"] = "No se pudo cambiar el estado de la orden";
+                TempData["Error"] = $"Error al actualizar estado: {ex.Message}";
             }
 
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        // POST: Admin/Ordenes/Cancelar
+        // POST: Ordenes/Cancelar/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Cancelar(int id)
         {
-            var resultado = await _ordenService.CancelarOrdenAsync(id);
+            try
+            {
+                var orden = await _context.Ordenes.FindAsync(id);
+                if (orden == null)
+                {
+                    TempData["Error"] = "Orden no encontrada";
+                    return RedirectToAction(nameof(Index));
+                }
 
-            if (resultado)
-            {
-                TempData["Success"] = "Orden cancelada exitosamente. El stock ha sido devuelto.";
+                if (orden.Estado == "Entregado" || orden.Estado == "Cancelado")
+                {
+                    TempData["Error"] = "No se puede cancelar una orden entregada o ya cancelada";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+
+                orden.Estado = "Cancelado";
+
+                // Agregar motivo a notas internas
+                var notaCancelacion = $"Cancelado ({DateTime.Now:dd/MM/yyyy HH:mm})";
+                orden.NotasInternas = string.IsNullOrEmpty(orden.NotasInternas)
+                    ? notaCancelacion
+                    : $"{orden.NotasInternas}\n{notaCancelacion}";
+
+                // Restaurar inventario
+                await RestaurarInventarioAsync(id);
+
+                _context.Update(orden);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = "Orden cancelada exitosamente";
             }
-            else
+            catch (Exception ex)
             {
-                TempData["Error"] = "No se pudo cancelar la orden";
+                TempData["Error"] = $"Error al cancelar orden: {ex.Message}";
             }
 
             return RedirectToAction(nameof(Details), new { id });
+        }
+
+        // Métodos auxiliares
+        private bool ValidarTransicionEstado(string estadoActual, string nuevoEstado)
+        {
+            // Definir transiciones válidas
+            var transicionesValidas = new Dictionary<string, List<string>>
+            {
+                { "Pendiente", new List<string> { "Pagado", "Cancelado" } },
+                { "Pagado", new List<string> { "Enviado", "Cancelado" } },
+                { "Enviado", new List<string> { "Entregado", "Cancelado" } },
+                { "Entregado", new List<string> { } }, // Estado final
+                { "Cancelado", new List<string> { } }  // Estado final
+            };
+
+            return transicionesValidas.ContainsKey(estadoActual) &&
+                   transicionesValidas[estadoActual].Contains(nuevoEstado);
+        }
+
+        private async Task RestaurarInventarioAsync(int ordenId)
+        {
+            var detalles = await _context.OrdenDetalles
+                .Include(d => d.Producto)
+                .Include(d => d.Orden)
+                .Where(d => d.OrdenId == ordenId)
+                .ToListAsync();
+
+            foreach (var detalle in detalles)
+            {
+                var stockAnterior = detalle.Producto.Stock;
+                detalle.Producto.Stock += detalle.Cantidad;
+                _context.Update(detalle.Producto);
+
+                // Registrar en kardex
+                var kardex = new Kardex
+                {
+                    ProductoId = detalle.ProductoId,
+                    TipoMovimiento = "Entrada",
+                    Cantidad = detalle.Cantidad,
+                    StockAnterior = stockAnterior,
+                    StockNuevo = detalle.Producto.Stock,
+                    Referencia = $"Orden #{detalle.Orden.NumeroOrden}",
+                    Descripcion = $"Cancelación de orden",
+                    Fecha = DateTime.Now
+                };
+
+                _context.Kardex.Add(kardex);
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        // API para estadísticas rápidas
+        [HttpGet]
+        public async Task<IActionResult> ObtenerEstadisticas()
+        {
+            var stats = new
+            {
+                TotalPendientes = await _context.Ordenes.CountAsync(o => o.Estado == "Pendiente"),
+                TotalPagadas = await _context.Ordenes.CountAsync(o => o.Estado == "Pagado"),
+                TotalEnviadas = await _context.Ordenes.CountAsync(o => o.Estado == "Enviado"),
+                TotalEntregadas = await _context.Ordenes.CountAsync(o => o.Estado == "Entregado"),
+                TotalCanceladas = await _context.Ordenes.CountAsync(o => o.Estado == "Cancelado"),
+                VentasHoy = await _context.Ordenes
+                    .Where(o => o.FechaOrden.Date == DateTime.Today && o.Estado != "Cancelado")
+                    .SumAsync(o => o.Total)
+            };
+
+            return Json(stats);
         }
     }
 }

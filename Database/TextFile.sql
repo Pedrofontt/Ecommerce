@@ -393,4 +393,85 @@ INSERT INTO Proveedores (Nombre, Contacto, Email, Telefono) VALUES
 
 GO
 
+--Usuario Cliente
+
+  INSERT INTO AspNetUsers (
+    Id, 
+    UserName, 
+    NormalizedUserName, 
+    Email, 
+    NormalizedEmail, 
+    EmailConfirmed, 
+    PasswordHash, 
+    SecurityStamp, 
+    ConcurrencyStamp, 
+    PhoneNumber, 
+    PhoneNumberConfirmed, 
+    TwoFactorEnabled, 
+    LockoutEnd, 
+    LockoutEnabled, 
+    AccessFailedCount
+)
+VALUES (
+    '15470921-e2c3-4d2c-9396-9fa5528265f7', -- Id
+    'cliente@test.com',                        -- UserName
+    'CLIENTE@TEST.COM',                        -- NormalizedUserName
+    'cliente@test.com',                        -- Email
+    'CLIENTE@TEST.COM',                        -- NormalizedEmail
+    1,                                       -- EmailConfirmed (True)
+    'AQAAAAIAAYagAAAAEIDDrFnZYHGpzL/OjhgD9drxD1wvurvzFChPYzovRh/1+E++1+QWZuTrw5QzuvxdQQ==', -- PasswordHash
+    'SGD53HO3ERANZDPPK3ZYGB6HYL5KXWVK',      -- SecurityStamp
+    'a91e4c1b-1844-42c4-b59a-93936f13a27c',  -- ConcurrencyStamp
+    NULL,                                    -- PhoneNumber
+    0,                                       -- PhoneNumberConfirmed
+    0,                                       -- TwoFactorEnabled
+    NULL,                                    -- LockoutEnd
+    1,                                       -- LockoutEnabled
+    0                                        -- AccessFailedCount
+);
+
+--Usuario Admin
+
+INSERT INTO AspNetUsers (
+    Id, 
+    UserName, 
+    NormalizedUserName, 
+    Email, 
+    NormalizedEmail, 
+    EmailConfirmed, 
+    PasswordHash, 
+    SecurityStamp, 
+    ConcurrencyStamp, 
+    PhoneNumber, 
+    PhoneNumberConfirmed, 
+    TwoFactorEnabled, 
+    LockoutEnd, 
+    LockoutEnabled, 
+    AccessFailedCount
+)
+VALUES (
+    '33a8fffd-eafa-4fad-9492-0d106b20a17e', -- Id del Admin
+    'admin@ecommerce.com',                 -- UserName
+    'ADMIN@ECOMMERCE.COM',                 -- NormalizedUserName
+    'admin@ecommerce.com',                 -- Email
+    'ADMIN@ECOMMERCE.COM',                 -- NormalizedEmail
+    1,                                     -- EmailConfirmed (True)
+    'AQAAAAIAAYagAAAAEEFTNZYgpha+qKxd+8Bo4Z7n6a8ylSCinQTL0/beAesUwAK31C1RcsA4xTs4Y4/nDg==', -- PasswordHash
+    'HLSXYVRRTBJ7SMK5JSD24F7NSAUEBYGB',    -- SecurityStamp
+    'f9cb2f89-f6f1-47fe-b3da-3dc6f2294135',  -- ConcurrencyStamp
+    NULL,                                  -- PhoneNumber
+    0,                                     -- PhoneNumberConfirmed
+    0,                                     -- TwoFactorEnabled
+    NULL,                                  -- LockoutEnd
+    1,                                     -- LockoutEnabled
+    0                                      -- AccessFailedCount
+);
+
+--Rol admin 
+
+Insert into dbo.AspNetUserRoles (UserId,RoleId) values ('33a8fffd-eafa-4fad-9492-0d106b20a17e', 'dac91fec-5b3a-45bf-aed3-b3dca2b64106')
+
+-- Rol Cliente
+
+Insert into dbo.AspNetUserRoles (UserId,RoleId) values ('15470921-e2c3-4d2c-9396-9fa5528265f7', '65a1dc47-9997-43ab-8425-4a609bf73959')
 PRINT 'Base de datos creada exitosamente';

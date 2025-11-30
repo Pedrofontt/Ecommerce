@@ -1,0 +1,358 @@
+﻿@model EcommerceSystem.Models.Entities.Categoria
+@{
+    ViewData["Title"] = "Detalles de Categoría";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-tags"></i> Detalles de Categoría</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a asp-action="Index" class="btn btn-secondary me-2">
+            <i class="bi bi-arrow-left"></i> Volver al Listado
+        </a>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning me-2">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+            <i class="bi bi-trash"></i> Eliminar
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Información principal -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header @(Model.Activo ? "bg-success" : "bg-secondary") text-white">
+                <h4 class="mb-0">
+                    @Model.Nombre
+                    @if (Model.Activo)
+                    {
+                        <span class="badge bg-light text-success ms-2">
+                            <i class="bi bi-check-circle"></i> Activa
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-light text-secondary ms-2">
+                            <i class="bi bi-x-circle"></i> Inactiva
+                        </span>
+                    }
+                </h4>
+            </div>
+            <div class="card-body">
+                <!-- Información de la categoría -->
+                <h5 class="mb-3"><i class="bi bi-info-circle"></i> Información General</h5>
+                
+                <dl class="row">
+                    <dt class="col-sm-3">Nombre:</dt>
+                    <dd class="col-sm-9"><strong>@Model.Nombre</strong></dd>
+
+                    <dt class="col-sm-3">Descripción:</dt>
+                    <dd class="col-sm-9">
+                        @if (!string.IsNullOrEmpty(Model.Descripcion))
+                        {
+                            <span>@Model.Descripcion</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sin descripción</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Categoría Padre:</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.Parent != null)
+                        {
+                            <span class="badge bg-info">@Model.Parent.Nombre</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Categoría Principal</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Orden:</dt>
+                    <dd class="col-sm-9"><span class="badge bg-secondary">@Model.Orden</span></dd>
+
+                    <dt class="col-sm-3">Icono:</dt>
+                    <dd class="col-sm-9">
+                        @if (!string.IsNullOrEmpty(Model.Icono))
+                        {
+                            <span><i class="bi bi-@Model.Icono"></i> @Model.Icono</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sin icono</span>
+                        }
+                    </dd>
+                </dl>
+
+                <hr class="my-4">
+
+                <!-- Subcategorías -->
+                @if (Model.Subcategorias != null && Model.Subcategorias.Any())
+                {
+                    <h5 class="mb-3">
+                        <i class="bi bi-diagram-3"></i> Subcategorías 
+                        <span class="badge bg-info">@Model.Subcategorias.Count</span>
+                    </h5>
+
+                    <div class="list-group">
+                        @foreach (var sub in Model.Subcategorias)
+                        {
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">
+                                        <i class="bi bi-tag"></i> @sub.Nombre
+                                        @if (sub.Activo)
+                                        {
+                                            <span class="badge bg-success ms-2">Activa</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary ms-2">Inactiva</span>
+                                        }
+                                    </h6>
+                                    <small>Orden: @sub.Orden</small>
+                                </div>
+                                @if (!string.IsNullOrEmpty(sub.Descripcion))
+                                {
+                                    <p class="mb-1 small text-muted">@sub.Descripcion</p>
+                                }
+                                <small>
+                                    Productos: <span class="badge bg-primary">@(sub.ProductoCategorias?.Count ?? 0)</span>
+                                </small>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Esta categoría no tiene subcategorías.
+                    </div>
+                }
+
+                <hr class="my-4">
+
+                <!-- Productos de la categoría -->
+                <h5 class="mb-3">
+                    <i class="bi bi-box-seam"></i> Productos 
+                    <span class="badge bg-primary">@(Model.ProductoCategorias?.Count ?? 0)</span>
+                </h5>
+
+                @if (Model.ProductoCategorias != null && Model.ProductoCategorias.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead>
+                                <tr>
+                                    <th>SKU</th>
+                                    <th>Producto</th>
+                                    <th>Marca</th>
+                                    <th>Stock</th>
+                                    <th>Precio</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var pc in Model.ProductoCategorias.Take(20))
+                                {
+                                    var producto = pc.Producto;
+                                    <tr>
+                                        <td><code>@producto.SKU</code></td>
+                                        <td>
+                                            <strong>@producto.Nombre</strong>
+                                            @if (producto.Destacado)
+                                            {
+                                                <span class="badge bg-warning text-dark ms-1">
+                                                    <i class="bi bi-star-fill"></i>
+                                                </span>
+                                            }
+                                        </td>
+                                        <td>@(producto.Marca?.Nombre ?? "N/A")</td>
+                                        <td>
+                                            @if (producto.Stock == 0)
+                                            {
+                                                <span class="badge bg-danger">@producto.Stock</span>
+                                            }
+                                            else if (producto.Stock <= producto.StockMinimo)
+                                            {
+                                                <span class="badge bg-warning text-dark">@producto.Stock</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">@producto.Stock</span>
+                                            }
+                                        </td>
+                                        <td><strong>@producto.Precio.ToString("C")</strong></td>
+                                        <td>
+                                            @if (producto.Activo)
+                                            {
+                                                <span class="badge bg-success">Activo</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Inactivo</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            @if (Model.ProductoCategorias.Count > 20)
+                            {
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">
+                                            <small>Mostrando 20 de @Model.ProductoCategorias.Count productos</small>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            }
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Esta categoría no tiene productos asociados.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel lateral con estadísticas -->
+    <div class="col-md-4">
+        <!-- Información general -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0"><i class="bi bi-info-circle"></i> Información</h6>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">ID:</dt>
+                    <dd class="col-sm-7"><code>@Model.Id</code></dd>
+
+                    <dt class="col-sm-5">Estado:</dt>
+                    <dd class="col-sm-7">
+                        @if (Model.Activo)
+                        {
+                            <span class="badge bg-success">Activa</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactiva</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-5">Tipo:</dt>
+                    <dd class="col-sm-7">
+                        @if (Model.Parent == null)
+                        {
+                            <span class="badge bg-info">Principal</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Subcategoría</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-5">Subcategorías:</dt>
+                    <dd class="col-sm-7">
+                        <span class="badge bg-info">@(Model.Subcategorias?.Count ?? 0)</span>
+                    </dd>
+
+                    <dt class="col-sm-5">Productos:</dt>
+                    <dd class="col-sm-7">
+                        <span class="badge bg-primary">@(Model.ProductoCategorias?.Count ?? 0)</span>
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Estadísticas de productos -->
+        @if (Model.ProductoCategorias != null && Model.ProductoCategorias.Any())
+        {
+            var productos = Model.ProductoCategorias.Select(pc => pc.Producto).ToList();
+            <div class="card mt-3">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0"><i class="bi bi-graph-up"></i> Estadísticas de Productos</h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0 small">
+                        <dt class="col-sm-7">Total Productos:</dt>
+                        <dd class="col-sm-5 text-end">
+                            <strong>@productos.Count</strong>
+                        </dd>
+
+                        <dt class="col-sm-7">Stock Total:</dt>
+                        <dd class="col-sm-5 text-end">
+                            <strong>@productos.Sum(p => p.Stock)</strong>
+                        </dd>
+
+                        <dt class="col-sm-7">Valor Total:</dt>
+                        <dd class="col-sm-5 text-end">
+                            <strong>@productos.Sum(p => p.Stock * p.Precio).ToString("C")</strong>
+                        </dd>
+
+                        <dt class="col-sm-7">Stock Bajo:</dt>
+                        <dd class="col-sm-5 text-end">
+                            <span class="badge bg-warning text-dark">
+                                @productos.Count(p => p.Stock <= p.StockMinimo)
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-7">Sin Stock:</dt>
+                        <dd class="col-sm-5 text-end">
+                            <span class="badge bg-danger">
+                                @productos.Count(p => p.Stock == 0)
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-7">Destacados:</dt>
+                        <dd class="col-sm-5 text-end">
+                            <span class="badge bg-warning text-dark">
+                                @productos.Count(p => p.Destacado)
+                            </span>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        }
+
+        <!-- Jerarquía -->
+        @if (Model.Parent != null)
+        {
+            <div class="card mt-3 bg-light">
+                <div class="card-body">
+                    <h6 class="card-title"><i class="bi bi-diagram-3"></i> Jerarquía</h6>
+                    <div class="small">
+                        <i class="bi bi-folder"></i> @Model.Parent.Nombre
+                        <br>
+                        <span class="ms-3">└─ <i class="bi bi-tag"></i> @Model.Nombre</span>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Acciones rápidas -->
+        <div class="card mt-3 bg-info text-white">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-lightning"></i> Acciones Rápidas</h6>
+                <div class="d-grid gap-2">
+                    <a asp-controller="Productos" asp-action="Index" class="btn btn-sm btn-light">
+                        <i class="bi bi-box-seam"></i> Ver Productos de Esta Categoría
+                    </a>
+                    @if (Model.Parent == null)
+                    {
+                        <a asp-action="Create" class="btn btn-sm btn-light">
+                            <i class="bi bi-plus-circle"></i> Agregar Subcategoría
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

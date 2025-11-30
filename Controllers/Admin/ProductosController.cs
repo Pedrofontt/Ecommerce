@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace EcommerceSystem.Controllers.Admin
 {
     [Authorize(Roles = "Admin")]
-    [Area("Admin")]
+    // ❌ ELIMINADO: [Area("Admin")] - Para que funcione como DashboardController
     public class ProductosController : Controller
     {
         private readonly IProductoService _productoService;
@@ -28,7 +28,7 @@ namespace EcommerceSystem.Controllers.Admin
             _env = env;
         }
 
-        // GET: Admin/Productos
+        // GET: Productos (ruta: /Productos)
         public async Task<IActionResult> Index(
             string sortOrder,
             string currentFilter,
@@ -80,35 +80,37 @@ namespace EcommerceSystem.Controllers.Admin
             };
 
             int pageSize = 10;
-            return View(await PaginatedList<Producto>.CreateAsync(
-                productos.AsNoTracking(),
-                pageNumber ?? 1,
-                pageSize));
+
+            // ✅ Especificar ruta completa de vista como en DashboardController
+            return View("~/Views/Admin/Productos/Index.cshtml",
+                await PaginatedList<Producto>.CreateAsync(
+                    productos.AsNoTracking(),
+                    pageNumber ?? 1,
+                    pageSize));
         }
 
-        // GET: Admin/Productos/Details/5
+        // GET: Productos/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
                 return NotFound();
 
             var producto = await _productoService.ObtenerPorIdAsync(id.Value);
-
             if (producto == null)
                 return NotFound();
 
-            return View(producto);
+            return View("~/Views/Admin/Productos/Details.cshtml", producto);
         }
 
-        // GET: Admin/Productos/Create
+        // GET: Productos/Create
         public IActionResult Create()
         {
             var viewModel = new ProductoViewModel();
             CargarDropdowns(viewModel);
-            return View(viewModel);
+            return View("~/Views/Admin/Productos/Create.cshtml", viewModel);
         }
 
-        // POST: Admin/Productos/Create
+        // POST: Productos/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ProductoViewModel model)
@@ -116,7 +118,7 @@ namespace EcommerceSystem.Controllers.Admin
             if (!ModelState.IsValid)
             {
                 CargarDropdowns(model);
-                return View(model);
+                return View("~/Views/Admin/Productos/Create.cshtml", model);
             }
 
             // Crear entidad
@@ -145,7 +147,6 @@ namespace EcommerceSystem.Controllers.Admin
             }
 
             var resultado = await _productoService.CrearAsync(producto);
-
             if (resultado)
             {
                 TempData["Success"] = "Producto creado exitosamente";
@@ -154,10 +155,10 @@ namespace EcommerceSystem.Controllers.Admin
 
             TempData["Error"] = "Error al crear el producto";
             CargarDropdowns(model);
-            return View(model);
+            return View("~/Views/Admin/Productos/Create.cshtml", model);
         }
 
-        // GET: Admin/Productos/Edit/5
+        // GET: Productos/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -186,10 +187,10 @@ namespace EcommerceSystem.Controllers.Admin
             };
 
             CargarDropdowns(viewModel);
-            return View(viewModel);
+            return View("~/Views/Admin/Productos/Edit.cshtml", viewModel);
         }
 
-        // POST: Admin/Productos/Edit/5
+        // POST: Productos/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ProductoViewModel model)
@@ -200,7 +201,7 @@ namespace EcommerceSystem.Controllers.Admin
             if (!ModelState.IsValid)
             {
                 CargarDropdowns(model);
-                return View(model);
+                return View("~/Views/Admin/Productos/Edit.cshtml", model);
             }
 
             var producto = await _productoService.ObtenerPorIdAsync(id);
@@ -230,7 +231,6 @@ namespace EcommerceSystem.Controllers.Admin
             }
 
             var resultado = await _productoService.ActualizarAsync(producto);
-
             if (resultado)
             {
                 TempData["Success"] = "Producto actualizado exitosamente";
@@ -239,10 +239,10 @@ namespace EcommerceSystem.Controllers.Admin
 
             TempData["Error"] = "Error al actualizar el producto";
             CargarDropdowns(model);
-            return View(model);
+            return View("~/Views/Admin/Productos/Edit.cshtml", model);
         }
 
-        // GET: Admin/Productos/Delete/5
+        // GET: Productos/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -252,16 +252,15 @@ namespace EcommerceSystem.Controllers.Admin
             if (producto == null)
                 return NotFound();
 
-            return View(producto);
+            return View("~/Views/Admin/Productos/Delete.cshtml", producto);
         }
 
-        // POST: Admin/Productos/Delete/5
+        // POST: Productos/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var resultado = await _productoService.EliminarAsync(id);
-
             if (resultado)
             {
                 TempData["Success"] = "Producto eliminado exitosamente";
@@ -285,7 +284,6 @@ namespace EcommerceSystem.Controllers.Admin
                     Text = c.Nombre
                 })
                 .ToList();
-
             model.Categorias.Insert(0, new SelectListItem { Value = "", Text = "-- Seleccione --" });
 
             model.Marcas = _context.Marcas
@@ -296,7 +294,6 @@ namespace EcommerceSystem.Controllers.Admin
                     Text = m.Nombre
                 })
                 .ToList();
-
             model.Marcas.Insert(0, new SelectListItem { Value = "", Text = "-- Seleccione --" });
 
             model.Proveedores = _context.Proveedores
@@ -307,7 +304,6 @@ namespace EcommerceSystem.Controllers.Admin
                     Text = p.Nombre
                 })
                 .ToList();
-
             model.Proveedores.Insert(0, new SelectListItem { Value = "", Text = "-- Seleccione --" });
         }
 

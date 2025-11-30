@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Detalles de Orden";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
 <div class="row">
@@ -23,8 +24,8 @@
             case "Pendiente":
                 <span class="badge bg-warning text-dark fs-5">Pendiente</span>
                 break;
-            case "Confirmado":
-                <span class="badge bg-info fs-5">Confirmado</span>
+            case "Pagado":
+                <span class="badge bg-info fs-5">Pagado</span>
                 break;
             case "Enviado":
                 <span class="badge bg-primary fs-5">Enviado</span>
@@ -52,24 +53,24 @@
                     <div class="col-md-6">
                         <p class="mb-2"><strong>Nombre:</strong> @Model.Cliente.NombreCompleto</p>
                         <p class="mb-2"><strong>Email:</strong> @Model.Cliente.Email</p>
-                        <p class="mb-0"><strong>Teléfono:</strong> @Model.Cliente.Telefono</p>
+                        <p class="mb-0"><strong>Teléfono:</strong> @(Model.Cliente.Telefono ?? "No especificado")</p>
                     </div>
                     <div class="col-md-6">
                         <p class="mb-2"><strong>Dirección de Envío:</strong></p>
-                        <p class="mb-0">@Model.DireccionEnvio</p>
+                        <p class="mb-0">@(Model.DireccionEnvio ?? "No especificada")</p>
                     </div>
                 </div>
                 @if (!string.IsNullOrEmpty(Model.NotasCliente))
                 {
                     <hr>
                     <p class="mb-1"><strong>Notas del Cliente:</strong></p>
-                    <p class="text-muted mb-0">@Model.NotasCliente</p>
+                    <p class="text-muted mb-0" style="white-space: pre-line;">@Model.NotasCliente</p>
                 }
                 @if (!string.IsNullOrEmpty(Model.NotasInternas))
                 {
                     <hr>
                     <p class="mb-1"><strong>Notas Internas:</strong></p>
-                    <p class="text-muted mb-0">@Model.NotasInternas</p>
+                    <p class="text-muted mb-0" style="white-space: pre-line;">@Model.NotasInternas</p>
                 }
             </div>
         </div>
@@ -103,8 +104,10 @@
                                         }
                                         else
                                         {
-                                            <img src="/img/productos/default.jpg" alt="Sin imagen" 
-                                                 class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
+                                            <div class="bg-secondary rounded d-flex align-items-center justify-content-center" 
+                                                 style="width: 60px; height: 60px;">
+                                                <i class="bi bi-image text-white"></i>
+                                            </div>
                                         }
                                     </td>
                                     <td class="align-middle">
@@ -225,47 +228,15 @@
                 {
                     <h6 class="mb-3">Cambiar Estado</h6>
                     
-                    @if (Model.Estado == "Pendiente")
-                    {
-                        <form asp-action="CambiarEstado" method="post" class="mb-2">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="id" value="@Model.Id">
-                            <input type="hidden" name="nuevoEstado" value="Confirmado">
-                            <button type="submit" class="btn btn-info w-100">
-                                <i class="bi bi-check-circle"></i> Confirmar Orden
-                            </button>
-                        </form>
-                    }
-                    
-                    @if (Model.Estado == "Confirmado")
-                    {
-                        <form asp-action="CambiarEstado" method="post" class="mb-2">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="id" value="@Model.Id">
-                            <input type="hidden" name="nuevoEstado" value="Enviado">
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="bi bi-truck"></i> Marcar como Enviado
-                            </button>
-                        </form>
-                    }
-                    
-                    @if (Model.Estado == "Enviado")
-                    {
-                        <form asp-action="CambiarEstado" method="post" class="mb-2">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="id" value="@Model.Id">
-                            <input type="hidden" name="nuevoEstado" value="Entregado">
-                            <button type="submit" class="btn btn-success w-100">
-                                <i class="bi bi-check-all"></i> Marcar como Entregado
-                            </button>
-                        </form>
-                    }
+                    <a asp-action="CambiarEstado" asp-route-id="@Model.Id" class="btn btn-info w-100 mb-2">
+                        <i class="bi bi-check-circle"></i> Confirmar Orden
+                    </a>
 
                     <hr>
                 }
 
                 <!-- Cancelar Orden -->
-                @if (Model.Estado == "Pendiente" || Model.Estado == "Confirmado")
+                @if (Model.Estado == "Pendiente" || Model.Estado == "Pagado")
                 {
                     <h6 class="mb-3 text-danger">Zona de Peligro</h6>
                     <form asp-action="Cancelar" method="post">
@@ -276,9 +247,8 @@
                             <i class="bi bi-x-circle"></i> Cancelar Orden
                         </button>
                     </form>
+                    <hr>
                 }
-
-                <hr>
 
                 <!-- Otras Acciones -->
                 <h6 class="mb-3">Otras Acciones</h6>

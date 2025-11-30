@@ -1,0 +1,246 @@
+﻿@model EcommerceSystem.Models.Entities.Categoria
+@{
+    ViewData["Title"] = "Eliminar Categoría";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-trash"></i> Eliminar Categoría</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al Listado
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="alert alert-danger">
+            <h4 class="alert-heading"><i class="bi bi-exclamation-triangle-fill"></i> ¿Está seguro que desea eliminar esta categoría?</h4>
+            <p>Esta acción marcará la categoría como inactiva. Los productos asociados seguirán existiendo pero no podrá seleccionar esta categoría para nuevos productos.</p>
+            <hr>
+            <p class="mb-0"><strong>Nota:</strong> Esta es una eliminación lógica. La categoría no se eliminará físicamente de la base de datos.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">Información de la Categoría a Eliminar</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Nombre:</dt>
+                    <dd class="col-sm-9"><strong>@Model.Nombre</strong></dd>
+
+                    <dt class="col-sm-3">Descripción:</dt>
+                    <dd class="col-sm-9">
+                        @if (!string.IsNullOrEmpty(Model.Descripcion))
+                        {
+                            <span>@Model.Descripcion</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sin descripción</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Categoría Padre:</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.Parent != null)
+                        {
+                            <span class="badge bg-info">@Model.Parent.Nombre</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Categoría Principal</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Estado Actual:</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.Activo)
+                        {
+                            <span class="badge bg-success">Activa</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactiva</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Subcategorías:</dt>
+                    <dd class="col-sm-9">
+                        <span class="badge bg-info">@(Model.Subcategorias?.Count ?? 0)</span>
+                    </dd>
+
+                    <dt class="col-sm-3">Productos Asociados:</dt>
+                    <dd class="col-sm-9">
+                        <span class="badge bg-primary">@(Model.ProductoCategorias?.Count ?? 0)</span>
+                    </dd>
+                </dl>
+
+                <!-- Subcategorías afectadas -->
+                @if (Model.Subcategorias != null && Model.Subcategorias.Any())
+                {
+                    <hr>
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-exclamation-triangle"></i> Esta categoría tiene subcategorías
+                        </h6>
+                        <p class="mb-0">Las siguientes subcategorías también serán afectadas:</p>
+                    </div>
+                    <div class="list-group">
+                        @foreach (var sub in Model.Subcategorias)
+                        {
+                            <div class="list-group-item list-group-item-warning">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">@sub.Nombre</h6>
+                                    <small>@(sub.ProductoCategorias?.Count ?? 0) producto(s)</small>
+                                </div>
+                                @if (!string.IsNullOrEmpty(sub.Descripcion))
+                                {
+                                    <p class="mb-0 small text-muted">@sub.Descripcion</p>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+
+                <!-- Productos afectados -->
+                @if (Model.ProductoCategorias != null && Model.ProductoCategorias.Any())
+                {
+                    <hr>
+                    <h6 class="text-danger">
+                        <i class="bi bi-box-seam"></i> Productos que quedarán sin categoría activa:
+                    </h6>
+                    <div class="list-group" style="max-height: 300px; overflow-y: auto;">
+                        @foreach (var pc in Model.ProductoCategorias.Take(15))
+                        {
+                            var producto = pc.Producto;
+                            <div class="list-group-item list-group-item-warning">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">@producto.Nombre</h6>
+                                    <small>
+                                        @if (producto.Stock <= producto.StockMinimo)
+                                        {
+                                            <span class="badge bg-danger">Stock Bajo</span>
+                                        }
+                                        @if (producto.Destacado)
+                                        {
+                                            <span class="badge bg-warning text-dark">Destacado</span>
+                                        }
+                                    </small>
+                                </div>
+                                <small class="text-muted">
+                                    SKU: @producto.SKU - 
+                                    Stock: @producto.Stock - 
+                                    Precio: @producto.Precio.ToString("C")
+                                </small>
+                            </div>
+                        }
+                        @if (Model.ProductoCategorias.Count > 15)
+                        {
+                            <div class="list-group-item text-center">
+                                <small class="text-muted">Y @(Model.ProductoCategorias.Count - 15) producto(s) más...</small>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <hr class="my-4">
+
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="bi bi-trash"></i> Confirmar Eliminación
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel lateral con advertencias -->
+    <div class="col-md-4">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h6 class="mb-0"><i class="bi bi-exclamation-octagon"></i> Advertencias</h6>
+            </div>
+            <div class="card-body">
+                <ul class="small mb-0">
+                    <li class="mb-2">La categoría será marcada como <strong>inactiva</strong></li>
+                    <li class="mb-2">No se eliminará físicamente de la base de datos</li>
+                    <li class="mb-2">Los productos asociados seguirán existiendo</li>
+                    <li class="mb-2">No podrá seleccionar esta categoría para nuevos productos</li>
+                    <li class="mb-2">Las subcategorías también serán afectadas</li>
+                    <li class="mb-2">Puede reactivarla editando la categoría posteriormente</li>
+                </ul>
+            </div>
+        </div>
+
+        @if (Model.ProductoCategorias != null && Model.ProductoCategorias.Any())
+        {
+            var productos = Model.ProductoCategorias.Select(pc => pc.Producto).ToList();
+            <div class="card border-warning mt-3">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Impacto</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small mb-2">
+                        Esta categoría tiene <strong>@productos.Count producto(s)</strong> asociado(s).
+                    </p>
+                    <p class="small mb-2">
+                        Productos con stock bajo: 
+                        <span class="badge bg-warning text-dark">
+                            @productos.Count(p => p.Stock <= p.StockMinimo)
+                        </span>
+                    </p>
+                    <p class="small mb-2">
+                        Productos sin stock: 
+                        <span class="badge bg-danger">
+                            @productos.Count(p => p.Stock == 0)
+                        </span>
+                    </p>
+                    <p class="small mb-0">
+                        Valor total del inventario: 
+                        <strong>@productos.Sum(p => p.Stock * p.Precio).ToString("C")</strong>
+                    </p>
+                </div>
+            </div>
+        }
+
+        @if (Model.Subcategorias != null && Model.Subcategorias.Any())
+        {
+            <div class="card border-warning mt-3">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="bi bi-diagram-3"></i> Subcategorías</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small mb-2">
+                        Esta categoría tiene <strong>@Model.Subcategorias.Count subcategoría(s)</strong>.
+                    </p>
+                    <p class="small mb-0">
+                        Total de productos en subcategorías: 
+                        <span class="badge bg-info">
+                            @Model.Subcategorias.Sum(s => s.ProductoCategorias?.Count ?? 0)
+                        </span>
+                    </p>
+                </div>
+            </div>
+        }
+
+        <div class="card bg-light mt-3">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-lightbulb"></i> Recomendación</h6>
+                <p class="small mb-0">
+                    Si esta categoría podría volver a ser utilizada en el futuro, 
+                    considere simplemente <strong>desactivarla</strong> en lugar de eliminarla.
+                    Puede hacerlo desde la página de edición.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
